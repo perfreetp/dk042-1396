@@ -89,6 +89,52 @@
   font-family: 'Courier New', monospace;
 }
 
+.focusTip {
+  display: flex;
+  align-items: flex-start;
+  margin-top: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  background-color: rgba(30, 95, 168, 0.06);
+  border: 2rpx solid rgba(30, 95, 168, 0.15);
+  border-radius: $radius-md;
+}
+
+.focusIcon {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: $radius-round;
+  background-color: $color-primary;
+  color: $color-text-white;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+}
+
+.focusContent {
+  flex: 1;
+}
+
+.focusRole {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.focusText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+  display: block;
+}
+
 .cardFooter {
   padding-top: $spacing-md;
 }

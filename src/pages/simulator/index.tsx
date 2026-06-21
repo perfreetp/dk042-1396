@@ -7,6 +7,8 @@ import { useSimulator } from '@/store/SimulatorContext';
 import FormItem, { InputField, CheckboxField, RadioGroup } from '@/components/FormItem';
 import { FeedbackList } from '@/components/FeedbackTip';
 import { ScoreSection } from '@/components/ScoreItem';
+import { mockTasks } from '@/data/mockTasks';
+import { ScoreItem as ScoreItemType, RetryConfig } from '@/types';
 
 const SimulatorPage: React.FC = () => {
   const {
@@ -17,6 +19,7 @@ const SimulatorPage: React.FC = () => {
     borrowFeedbacks,
     returnFeedbacks,
     currentResult,
+    retryConfig,
     setCurrentStep,
     setBorrowData,
     setReturnData,
@@ -24,8 +27,12 @@ const SimulatorPage: React.FC = () => {
     validateReturnForm,
     calculateScore,
     resetSimulation,
-    addResult
+    addResult,
+    updateResultItem,
+    clearRetry
   } = useSimulator();
+
+  const isRetryMode = !!retryConfig;
 
   const handleNextStep = () => {
     const isValid = validateBorrowForm();
@@ -49,11 +56,66 @@ const SimulatorPage: React.FC = () => {
   const handleSaveResult = () => {
     if (currentResult) {
       addResult(currentResult);
-      Taro.showToast({
-        title: '成绩已保存',
-        icon: 'success'
-      });
+      Taro.showToast({ title: '成绩已保存', icon: 'success' });
       setTimeout(() => {
+        Taro.switchTab({ url: '/pages/results/index' });
+      }, 1500);
+    }
+  };
+
+  const handleRetrySubmit = () => {
+    if (!retryConfig || !currentResult) return;
+
+    const allItems = [...currentResult.borrowScore, ...currentResult.returnScore];
+    const targetItem = allItems.find(i => i.field === retryConfig.field);
+
+    if (!targetItem) return;
+
+    const step: 'borrow' | 'return' = retryConfig.step;
+    const scores = step === 'borrow' ? currentResult.borrowScore : currentResult.returnScore;
+
+    let updatedItem: ScoreItemType | null = null;
+
+    if (step === 'borrow') {
+      switch (retryConfig.field) {
+        case 'partNumber':
+          updatedItem = { ...targetItem, userAction: borrowData.partNumber ? `填写件号：${borrowData.partNumber}` : '未填写件号', isCorrect: borrowData.partNumber.trim() === currentTask?.partNumber, score: borrowData.partNumber.trim() === currentTask?.partNumber ? 10 : 0, mastered: borrowData.partNumber.trim() === currentTask?.partNumber };
+          break;
+        case 'serialNumber':
+          updatedItem = { ...targetItem, userAction: borrowData.serialNumber ? `填写序号：${borrowData.serialNumber}` : '未填写序号', isCorrect: borrowData.serialNumber.trim() === currentTask?.serialNumber, score: borrowData.serialNumber.trim() === currentTask?.serialNumber ? 10 : 0, mastered: borrowData.serialNumber.trim() === currentTask?.serialNumber };
+          break;
+        case 'airworthinessTag':
+          updatedItem = { ...targetItem, userAction: borrowData.airworthinessTag ? '已确认适航标签' : '未确认适航标签', isCorrect: borrowData.airworthinessTag, score: borrowData.airworthinessTag ? 10 : 0, mastered: borrowData.airworthinessTag };
+          break;
+        case 'disassemblyRecord':
+          updatedItem = { ...targetItem, userAction: borrowData.disassemblyRecord ? '已确认拆装记录' : '未确认拆装记录', isCorrect: borrowData.disassemblyRecord, score: borrowData.disassemblyRecord ? 10 : 0, mastered: borrowData.disassemblyRecord };
+          break;
+        case 'workCardNumber':
+          const wcFilled = !!borrowData.workCardNumber.trim();
+          updatedItem = { ...targetItem, userAction: wcFilled ? `填写工卡号：${borrowData.workCardNumber}` : '未填写工卡号', isCorrect: wcFilled, score: wcFilled ? 10 : 0, mastered: wcFilled };
+          break;
+      }
+    } else {
+      switch (retryConfig.field) {
+        case 'partStatus':
+          const psOk = returnData.partStatus !== 'unknown';
+          updatedItem = { ...targetItem, userAction: `选择状态：${returnData.partStatus === 'good' ? '良好' : returnData.partStatus === 'damaged' ? '损坏' : '未知'}`, isCorrect: psOk, score: psOk ? 10 : 5, mastered: psOk };
+          break;
+        case 'hasRepairTag':
+          const rtOk = (returnData.partStatus === 'damaged' && returnData.hasRepairTag) || (returnData.partStatus !== 'damaged' && !returnData.hasRepairTag);
+          updatedItem = { ...targetItem, userAction: returnData.hasRepairTag ? '已挂待修牌' : '未挂待修牌', isCorrect: rtOk, score: rtOk ? 10 : 0, mastered: rtOk };
+          break;
+        case 'accessoriesComplete':
+          updatedItem = { ...targetItem, userAction: returnData.accessoriesComplete ? '确认附件齐套' : '附件不齐套', isCorrect: returnData.accessoriesComplete, score: returnData.accessoriesComplete ? 10 : 0, mastered: returnData.accessoriesComplete };
+          break;
+      }
+    }
+
+    if (updatedItem) {
+      updateResultItem(retryConfig.resultId, updatedItem);
+      Taro.showToast({ title: '掌握情况已更新', icon: 'success' });
+      setTimeout(() => {
+        clearRetry();
         Taro.switchTab({ url: '/pages/results/index' });
       }, 1500);
     }
@@ -71,7 +133,8 @@ const SimulatorPage: React.FC = () => {
           <Text className={styles.emptyTitle}>暂无进行中的任务</Text>
           <Text className={styles.emptyDesc}>请先从任务列表选择一个练习任务</Text>
           <Button className={styles.emptyBtn} onClick={handleGoBack}>
-            去选择任务</Button>
+            去选择任务
+          </Button>
         </View>
       </View>
     );
@@ -83,6 +146,8 @@ const SimulatorPage: React.FC = () => {
     { value: 'unknown', label: '未知', description: '暂时无法确定状态，需进一步检查' }
   ];
 
+  const retryField = retryConfig?.field;
+
   return (
     <View className={styles.page}>
       <View className={styles.taskHeader}>
@@ -91,6 +156,7 @@ const SimulatorPage: React.FC = () => {
         <View className={styles.taskMeta}>
           <View className={styles.metaItem}>飞机：{currentTask.aircraft}</View>
           <View className={styles.metaItem}>部件：{currentTask.partName}</View>
+          {isRetryMode && <View className={styles.metaItem}>错题重练</View>}
         </View>
       </View>
 
@@ -116,7 +182,9 @@ const SimulatorPage: React.FC = () => {
         {currentStep === 'borrow' && (
           <>
             <View className={styles.formContainer}>
-              <Text className={styles.formTitle}>借出信息登记</Text>
+              <Text className={styles.formTitle}>
+                {isRetryMode && retryField ? `重练：${retryField === 'partNumber' ? '件号填写' : retryField === 'serialNumber' ? '序号填写' : retryField === 'airworthinessTag' ? '适航标签确认' : retryField === 'disassemblyRecord' ? '拆装记录确认' : '工卡号填写'}` : '借出信息登记'}
+              </Text>
 
               <FormItem
                 label="件号（Part Number）"
@@ -195,7 +263,9 @@ const SimulatorPage: React.FC = () => {
         {currentStep === 'return' && (
           <>
             <View className={styles.formContainer}>
-              <Text className={styles.formTitle}>归还信息登记</Text>
+              <Text className={styles.formTitle}>
+                {isRetryMode && retryField ? `重练：${retryField === 'partStatus' ? '拆下件状态' : retryField === 'hasRepairTag' ? '待修牌确认' : '附件齐套检查'}` : '归还信息登记'}
+              </Text>
 
               <FormItem
                 label="拆下件状态"
@@ -268,21 +338,24 @@ const SimulatorPage: React.FC = () => {
 
       {currentStep !== 'result' && (
         <View className={styles.bottomBar}>
-          {currentStep === 'return' && (
+          {currentStep === 'return' && !isRetryMode && (
             <Button className={classnames(styles.btn, styles.btnSecondary)} onClick={handlePrevStep}>
               上一步
             </Button>
           )}
           <Button
             className={classnames(styles.btn, styles.btnPrimary)}
-            onClick={currentStep === 'borrow' ? handleNextStep : handleSubmit}
+            onClick={isRetryMode
+              ? handleRetrySubmit
+              : (currentStep === 'borrow' ? handleNextStep : handleSubmit)
+            }
           >
-            {currentStep === 'borrow' ? '下一步' : '提交评分'}
+            {isRetryMode ? '提交重练' : (currentStep === 'borrow' ? '下一步' : '提交评分')}
           </Button>
         </View>
       )}
 
-      {currentStep === 'result' && (
+      {currentStep === 'result' && !isRetryMode && (
         <View className={styles.bottomBar}>
           <Button className={classnames(styles.btn, styles.btnSecondary)} onClick={resetSimulation}>
             重新练习

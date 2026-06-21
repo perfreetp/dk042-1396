@@ -5,16 +5,15 @@ import classnames from 'classnames';
 import styles from './index.module.scss';
 import { useSimulator } from '@/store/SimulatorContext';
 import { ScoreSection } from '@/components/ScoreItem';
-import { SimulationResult } from '@/types';
+import { SimulationResult, ScoreItem as ScoreItemType, RetryConfig } from '@/types';
+import { mockTasks } from '@/data/mockTasks';
 
 const ResultsPage: React.FC = () => {
-  const { results, resetSimulation } = useSimulator();
+  const { results, resetSimulation, startRetry } = useSimulator();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const stats = useMemo(() => {
-    if (results.length === 0) {
-      return { count: 0, avgScore: 0, passRate: 0 };
-    }
+    if (results.length === 0) return { count: 0, avgScore: 0, passRate: 0 };
     const totalScore = results.reduce((sum, r) => sum + r.totalScore, 0);
     const maxTotalScore = results.reduce((sum, r) => sum + r.maxScore, 0);
     const avgScore = maxTotalScore > 0 ? Math.round((totalScore / maxTotalScore) * 100) : 0;
@@ -23,25 +22,36 @@ const ResultsPage: React.FC = () => {
     return { count: results.length, avgScore, passRate };
   }, [results]);
 
+  const errorCount = useMemo(() => {
+    return results.reduce((sum, r) => {
+      return sum + [...r.borrowScore, ...r.returnScore].filter(i => !i.isCorrect).length;
+    }, 0);
+  }, [results]);
+
+  const masteredCount = useMemo(() => {
+    return results.reduce((sum, r) => {
+      return sum + [...r.borrowScore, ...r.returnScore].filter(i => i.mastered).length;
+    }, 0);
+  }, [results]);
+
   const getScoreClass = (result: SimulationResult) => {
-    const percentage = result.totalScore / result.maxScore;
-    if (percentage >= 0.9) return styles.scoreExcellent;
-    if (percentage >= 0.75) return styles.scoreGood;
-    if (percentage >= 0.6) return styles.scorePass;
+    const p = result.totalScore / result.maxScore;
+    if (p >= 0.9) return styles.scoreExcellent;
+    if (p >= 0.75) return styles.scoreGood;
+    if (p >= 0.6) return styles.scorePass;
     return styles.scoreFail;
   };
 
   const getScoreLabel = (result: SimulationResult) => {
-    const percentage = result.totalScore / result.maxScore;
-    if (percentage >= 0.9) return '优秀';
-    if (percentage >= 0.75) return '良好';
-    if (percentage >= 0.6) return '及格';
+    const p = result.totalScore / result.maxScore;
+    if (p >= 0.9) return '优秀';
+    if (p >= 0.75) return '良好';
+    if (p >= 0.6) return '及格';
     return '需加强';
   };
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
-    console.log('[ResultsPage] Toggling result detail:', { resultId: id, expanded: expandedId !== id });
   };
 
   const handleGoToTasks = () => {
@@ -49,15 +59,22 @@ const ResultsPage: React.FC = () => {
     Taro.switchTab({ url: '/pages/tasks/index' });
   };
 
-  const handleRetryTask = (taskId: string) => {
-    const task = results.find(r => r.taskId === taskId);
-    if (task) {
-      console.log('[ResultsPage] Retrying task:', { taskId, taskTitle: task.taskTitle });
-      Taro.showToast({
-        title: '请先在任务列表选择任务',
-        icon: 'none'
-      });
+  const handleRetryItem = (result: SimulationResult, item: ScoreItemType) => {
+    const task = mockTasks.find(t => t.id === result.taskId);
+    if (!task) {
+      Taro.showToast({ title: '未找到对应任务', icon: 'none' });
+      return;
     }
+
+    const isBorrow = result.borrowScore.some(s => s.field === item.field);
+    const config: RetryConfig = {
+      resultId: result.id,
+      step: isBorrow ? 'borrow' : 'return',
+      field: item.field
+    };
+
+    startRetry(config, task);
+    Taro.switchTab({ url: '/pages/simulator/index' });
   };
 
   if (results.length === 0) {
@@ -93,6 +110,16 @@ const ResultsPage: React.FC = () => {
             <View className={styles.statItem}>
               <Text className={styles.statValue}>{stats.passRate}%</Text>
               <Text className={styles.statLabel}>通过率</Text>
+            </View>
+          </View>
+          <View className={styles.statsSubRow}>
+            <View className={styles.statSubItem}>
+              <Text className={styles.statSubValue}>{errorCount}</Text>
+              <Text className={styles.statSubLabel}>待掌握项</Text>
+            </View>
+            <View className={styles.statSubItem}>
+              <Text className={styles.statSubValue}>{masteredCount}</Text>
+              <Text className={styles.statSubLabel}>已掌握项</Text>
             </View>
           </View>
         </View>
@@ -145,17 +172,19 @@ const ResultsPage: React.FC = () => {
                 </View>
 
                 <View className={styles.detailSection}>
-                  <ScoreSection title="借出环节评分" items={result.borrowScore} />
-                  <ScoreSection title="归还环节评分" items={result.returnScore} />
+                  <ScoreSection
+                    title="借出环节评分"
+                    items={result.borrowScore}
+                    onRetry={(item) => handleRetryItem(result, item)}
+                  />
+                  <ScoreSection
+                    title="归还环节评分"
+                    items={result.returnScore}
+                    onRetry={(item) => handleRetryItem(result, item)}
+                  />
                 </View>
 
                 <View className={styles.quickActions}>
-                  <Button
-                    className={classnames(styles.actionBtn, styles.actionBtnSecondary)}
-                    onClick={() => handleRetryTask(result.taskId)}
-                  >
-                    再练一次
-                  </Button>
                   <Button
                     className={classnames(styles.actionBtn, styles.actionBtnPrimary)}
                     onClick={handleGoToTasks}

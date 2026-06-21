@@ -23,6 +23,53 @@
   color: $color-text-tertiary;
 }
 
+.roleBar {
+  display: flex;
+  gap: $spacing-sm;
+  padding: $spacing-md $page-padding;
+  background-color: $color-bg-card;
+  border-top: 1rpx solid $color-divider;
+}
+
+.roleItem {
+  flex: 1;
+  padding: $spacing-md $spacing-sm;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+  background-color: $color-bg-page;
+  text-align: center;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.roleActive {
+  border-color: $color-primary;
+  background-color: rgba(30, 95, 168, 0.05);
+  box-shadow: 0 2rpx 8rpx rgba(30, 95, 168, 0.15);
+}
+
+.roleLabel {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: $spacing-xs;
+
+  .roleActive & {
+    color: $color-primary;
+  }
+}
+
+.roleDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: block;
+  line-height: $line-height-normal;
+}
+
 .filterBar {
   display: flex;
   gap: $spacing-sm;

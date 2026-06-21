@@ -7,9 +7,10 @@ import { ScoreItem as ScoreItemType } from '@/types';
 interface ScoreItemProps {
   item: ScoreItemType;
   index?: number;
+  onRetry?: (item: ScoreItemType) => void;
 }
 
-const ScoreItem: React.FC<ScoreItemProps> = ({ item, index }) => {
+const ScoreItem: React.FC<ScoreItemProps> = ({ item, index, onRetry }) => {
   return (
     <View className={classnames(styles.scoreItem, item.isCorrect ? styles.correct : styles.incorrect)}>
       <View className={styles.itemHeader}>
@@ -41,6 +42,22 @@ const ScoreItem: React.FC<ScoreItemProps> = ({ item, index }) => {
             <Text className={styles.correctValue}>{item.correctAction}</Text>
           </View>
         )}
+        {item.riskNote && (
+          <View className={styles.riskRow}>
+            <View className={styles.riskIcon}>!</View>
+            <Text className={styles.riskText}>{item.riskNote}</Text>
+          </View>
+        )}
+        {!item.isCorrect && onRetry && (
+          <View className={styles.retryRow} onClick={() => onRetry(item)}>
+            <Text className={styles.retryBtn}>重练此项</Text>
+          </View>
+        )}
+        {item.isCorrect && item.mastered && (
+          <View className={styles.masteredTag}>
+            <Text className={styles.masteredText}>已掌握</Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -49,9 +66,10 @@ const ScoreItem: React.FC<ScoreItemProps> = ({ item, index }) => {
 interface ScoreSectionProps {
   title: string;
   items: ScoreItemType[];
+  onRetry?: (item: ScoreItemType) => void;
 }
 
-export const ScoreSection: React.FC<ScoreSectionProps> = ({ title, items }) => {
+export const ScoreSection: React.FC<ScoreSectionProps> = ({ title, items, onRetry }) => {
   const sectionScore = items.reduce((sum, item) => sum + item.score, 0);
   const sectionMaxScore = items.reduce((sum, item) => sum + item.maxScore, 0);
 
@@ -66,7 +84,7 @@ export const ScoreSection: React.FC<ScoreSectionProps> = ({ title, items }) => {
       </View>
       <View className={styles.sectionBody}>
         {items.map((item, index) => (
-          <ScoreItem key={item.step} item={item} index={index} />
+          <ScoreItem key={item.field} item={item} index={index} onRetry={onRetry} />
         ))}
       </View>
     </View>

@@ -2,10 +2,11 @@ import React from 'react';
 import { View, Text, Button } from '@tarojs/components';
 import classnames from 'classnames';
 import styles from './index.module.scss';
-import { Task } from '@/types';
+import { Task, UserRole, ROLE_CONFIG } from '@/types';
 
 interface TaskCardProps {
   task: Task;
+  currentRole?: UserRole;
   onStart: (task: Task) => void;
 }
 
@@ -15,8 +16,9 @@ const difficultyMap = {
   hard: { label: '困难', color: '#F53F3F', bg: '#FFECE8' }
 };
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onStart }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, currentRole, onStart }) => {
   const difficulty = difficultyMap[task.difficulty];
+  const focusTip = currentRole ? task.roleFocus[currentRole] : '';
 
   return (
     <View className={styles.taskCard}>
@@ -45,6 +47,16 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart }) => {
             <Text className={styles.infoValue}>{task.partNumber}</Text>
           </View>
         </View>
+
+        {focusTip && (
+          <View className={styles.focusTip}>
+            <View className={styles.focusIcon}>i</View>
+            <View className={styles.focusContent}>
+              <Text className={styles.focusRole}>{ROLE_CONFIG[currentRole!].label}重点：</Text>
+              <Text className={styles.focusText}>{focusTip}</Text>
+            </View>
+          </View>
+        )}
       </View>
 
       <View className={styles.cardFooter}>

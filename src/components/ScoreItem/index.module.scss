@@ -185,3 +185,70 @@
   line-height: $line-height-normal;
   display: block;
 }
+
+.riskRow {
+  display: flex;
+  align-items: flex-start;
+  margin-top: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background-color: rgba(255, 125, 0, 0.08);
+  border: 2rpx solid rgba(255, 125, 0, 0.2);
+  border-radius: $radius-md;
+}
+
+.riskIcon {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: $radius-round;
+  background-color: $color-error;
+  color: $color-text-white;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+}
+
+.riskText {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: #C93400;
+  line-height: $line-height-normal;
+}
+
+.retryRow {
+  margin-top: $spacing-md;
+  text-align: right;
+}
+
+.retryBtn {
+  display: inline-block;
+  padding: $spacing-xs $spacing-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  border-radius: $radius-button;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.masteredTag {
+  display: inline-block;
+  margin-top: $spacing-sm;
+  padding: $spacing-xs $spacing-md;
+  background-color: rgba(0, 180, 42, 0.1);
+  border: 2rpx solid rgba(0, 180, 42, 0.3);
+  border-radius: $radius-xs;
+}
+
+.masteredText {
+  font-size: $font-size-xs;
+  color: $color-success;
+  font-weight: $font-weight-medium;
+}
