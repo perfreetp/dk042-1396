@@ -1,0 +1,187 @@
+@use '@/styles/variables.scss' as *;
+
+.scoreSection {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.sectionScore {
+  display: flex;
+  align-items: baseline;
+}
+
+.sectionScoreValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.sectionScoreMax {
+  font-size: $font-size-md;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sectionBody {
+  padding: $spacing-lg;
+}
+
+.scoreItem {
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+  border: 2rpx solid $color-border;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.correct {
+  background-color: $color-tag-success;
+  border-color: rgba(0, 180, 42, 0.3);
+}
+
+.incorrect {
+  background-color: $color-tag-error;
+  border-color: rgba(245, 63, 63, 0.3);
+}
+
+.itemHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.stepIndex {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: $radius-round;
+  background-color: $color-primary;
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+}
+
+.stepInfo {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stepName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.scoreBadge {
+  display: flex;
+  align-items: baseline;
+}
+
+.score {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+}
+
+.scoreCorrect {
+  color: $color-success;
+}
+
+.scoreIncorrect {
+  color: $color-error;
+}
+
+.maxScore {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.statusIcon {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  margin-left: $spacing-md;
+  flex-shrink: 0;
+}
+
+.statusCorrect {
+  background-color: $color-success;
+}
+
+.statusIncorrect {
+  background-color: $color-error;
+}
+
+.itemBody {
+  padding-top: $spacing-md;
+  border-top: 1rpx dashed $color-border;
+}
+
+.actionRow,
+.correctRow {
+  margin-bottom: $spacing-xs;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.actionLabel,
+.correctLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.correctLabel {
+  color: $color-success;
+}
+
+.actionValue {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
+  display: block;
+}
+
+.userActionWrong {
+  color: $color-error;
+}
+
+.correctValue {
+  font-size: $font-size-md;
+  color: $color-success;
+  line-height: $line-height-normal;
+  display: block;
+}

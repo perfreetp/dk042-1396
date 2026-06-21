@@ -1,0 +1,70 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, rgba(30, 95, 168, 0.05) 0%, $color-bg-page 100%);
+  padding-bottom: calc(env(safe-area-inset-bottom) + #{$spacing-xl});
+}
+
+.header {
+  padding: $spacing-xl $page-padding $spacing-lg;
+  background-color: $color-bg-card;
+}
+
+.title {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.subtitle {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.filterBar {
+  display: flex;
+  gap: $spacing-sm;
+  padding: $spacing-md $page-padding;
+  background-color: $color-bg-card;
+  border-top: 1rpx solid $color-divider;
+  overflow-x: auto;
+
+  @include scroll-x-container;
+}
+
+.filterItem {
+  @include scroll-x-item(auto);
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $radius-button;
+  background-color: $color-bg-page;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  white-space: nowrap;
+
+  &.active {
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+    color: $color-text-white;
+  }
+}
+
+.taskList {
+  padding: $spacing-lg $page-padding;
+}
+
+.emptyState {
+  padding: $spacing-xl * 2 $page-padding;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  margin-bottom: $spacing-lg;
+  opacity: 0.3;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
