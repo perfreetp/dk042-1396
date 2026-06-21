@@ -1,156 +1,506 @@
-@use '@/styles/variables.scss' as *;
+@import '@/styles/variables.scss';
 
 .page {
   min-height: 100vh;
-  background: linear-gradient(180deg, rgba(30, 95, 168, 0.05) 0%, $color-bg-page 100%);
-  padding-bottom: calc(env(safe-area-inset-bottom) + #{$spacing-xl});
+  background-color: $color-bg-page;
+  padding-bottom: $spacing-xl * 3;
 }
 
 .header {
-  padding: $spacing-xl $page-padding $spacing-lg;
-  background-color: $color-bg-card;
+  padding: $spacing-xl $page-padding;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
 }
 
 .title {
+  display: block;
   font-size: $font-size-xxl;
   font-weight: $font-weight-bold;
-  color: $color-text-primary;
-  margin-bottom: $spacing-xs;
+  color: $color-text-white;
 }
 
 .subtitle {
+  display: block;
+  margin-top: $spacing-xs;
   font-size: $font-size-sm;
-  color: $color-text-tertiary;
+  color: rgba(255, 255, 255, 0.85);
 }
 
-.summaryBar {
-  display: flex;
-  gap: $spacing-sm;
-  padding: $spacing-md $page-padding;
-  background-color: $color-bg-card;
-  border-top: 1rpx solid $color-divider;
-}
-
-.summaryItem {
-  flex: 1;
-  padding: $spacing-md $spacing-sm;
-  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
-  border-radius: $radius-md;
+.emptyState {
+  padding: $spacing-xl * 3 $page-padding;
   text-align: center;
 }
 
-.summaryError {
-  background: linear-gradient(135deg, #F53F3F 0%, #FF7D00 100%);
+.emptyIcon {
+  display: block;
+  font-size: 160rpx;
+  opacity: 0.6;
+  margin-bottom: $spacing-lg;
 }
 
-.summaryMastered {
-  background: linear-gradient(135deg, #00B42A 0%, #7BC616 100%);
-}
-
-.summaryValue {
-  font-size: 48rpx;
-  font-weight: $font-weight-bold;
-  color: $color-text-white;
-  line-height: 1.2;
-}
-
-.summaryLabel {
-  font-size: $font-size-xs;
-  color: rgba(255, 255, 255, 0.9);
-  margin-top: $spacing-xs;
+.emptyText {
+  display: block;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  white-space: pre-wrap;
+  line-height: 1.6;
 }
 
 .filterTabs {
   display: flex;
-  gap: $spacing-xs;
-  padding: $spacing-md $page-padding;
-  background-color: $color-bg-card;
-  border-top: 1rpx solid $color-divider;
   overflow-x: auto;
-
-  @include scroll-x-container;
+  padding: $spacing-sm $page-padding $spacing-md;
+  background-color: $color-bg-card;
+  gap: $spacing-xs;
+  border-bottom: 1rpx solid $color-divider;
+  &::-webkit-scrollbar { display: none; }
 }
 
 .filterTab {
-  @include scroll-x-item(auto);
   padding: $spacing-sm $spacing-md;
-  border-radius: $radius-button;
   background-color: $color-bg-page;
+  border-radius: $radius-button;
   font-size: $font-size-sm;
   color: $color-text-secondary;
   white-space: nowrap;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+  &:active { transform: scale(0.96); }
+}
 
-  &.active {
-    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
-    color: $color-text-white;
+.active {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+/* ========== 看板视图 ========== */
+.dashboardScroll {
+  height: calc(100vh - 260rpx);
+  box-sizing: border-box;
+}
+
+.dashboardHeader {
+  padding: $spacing-md $page-padding $spacing-xs;
+}
+
+.dashboardDate {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-sm;
+  font-weight: $font-weight-medium;
+}
+
+.dashboardOverallCard {
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, #004481 0%, #1E5FA8 100%);
+  border-radius: $radius-lg;
+  color: $color-text-white;
+}
+
+.overallRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.overallItem {
+  text-align: center;
+  position: relative;
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -$spacing-md / 2;
+    top: 20%;
+    height: 60%;
+    width: 1rpx;
+    background-color: rgba(255, 255, 255, 0.2);
   }
 }
 
-.categoryGrid {
-  padding: $spacing-lg $page-padding;
+.overallRateRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: $spacing-xs;
+}
+
+.overallValue {
+  display: block;
+  font-size: 44rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  line-height: 1.1;
+}
+
+.overallValueHighlight {
+  font-size: 52rpx;
+  font-weight: $font-weight-bold;
+  color: #9ADF59;
+  line-height: 1.1;
+}
+
+.overallLabel {
+  display: block;
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: $spacing-xs / 2;
+}
+
+.deltaText {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+}
+
+.deltaBadge {
+  font-size: 22rpx;
+  font-weight: $font-weight-semibold;
+  padding: 2rpx 12rpx;
+  border-radius: $radius-round;
+}
+
+.deltaUp { color: #9ADF59; background-color: rgba(154, 223, 89, 0.15); }
+.deltaDown { color: #FF7D00; background-color: rgba(255, 125, 0, 0.15); }
+
+.overallInsights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.15);
+}
+
+.insightTag {
+  padding: $spacing-xs $spacing-sm;
+  background-color: rgba(255, 255, 255, 0.12);
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  color: $color-text-white;
+}
+
+.dashboardSection {
+  padding: $spacing-md $page-padding 0;
+}
+
+.dashboardSectionTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  padding-top: $spacing-sm;
+}
+
+.dashboardSectionHint {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-normal;
+}
+
+/* 4 类趋势卡片网格 */
+.trendCardsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-md;
+  margin-bottom: $spacing-sm;
+}
+
+.trendCard {
+  padding: $spacing-lg;
+  border-radius: $radius-lg;
+  background-color: $color-bg-card;
+  box-shadow: $shadow-card;
+  border-left: 8rpx solid $color-primary;
+}
+
+.trendCardOk { border-left-color: #00B42A; }
+.trendCardError { border-left-color: #FF7D00; }
+
+.trendCardHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.trendCardIcon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-md;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  font-weight: $font-weight-bold;
+  flex-shrink: 0;
+}
+
+.trendCardMeta {
+  flex: 1;
+}
+
+.trendCardTitle {
+  display: block;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.trendCardStats {
+  display: flex;
+  align-items: baseline;
+  gap: $spacing-sm;
+}
+
+.trendCardRate {
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  line-height: 1;
+}
+
+.sparklineBox {
+  background-color: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.trendCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+  gap: $spacing-md;
+}
+
+.trendProgress {
+  flex: 1;
+  height: 12rpx;
+  background-color: $color-bg-page;
+  border-radius: $radius-round;
+  overflow: hidden;
+}
+
+.trendProgressFill {
+  height: 100%;
+  border-radius: $radius-round;
+  transition: width $transition-base ease;
+}
+
+.trendProgressText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.trendCardActions {
+  display: flex;
+}
+
+.trendBtnPrimary {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  background: linear-gradient(135deg, #FF7D00 0%, #FF9F1A 100%);
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  &:active { opacity: 0.9; }
+}
+
+/* 8 类总览卡片 */
+.fullCategoryGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-sm;
+}
+
+.fullCatCard {
+  padding: $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+  &:active { transform: scale(0.97); }
+}
+
+.fullCatCardEmpty {
+  opacity: 0.5;
+  &:active { transform: none; }
+}
+
+.fullCatTop {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
+}
+
+.fullCatIcon {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: $radius-sm;
+  background: linear-gradient(135deg, rgba(30, 95, 168, 0.15) 0%, rgba(74, 144, 217, 0.15) 100%);
+  color: $color-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  flex-shrink: 0;
+}
+
+.fullCatTitle {
+  flex: 1;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.fullCatRate {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.fullCatBar {
+  height: 10rpx;
+  background-color: $color-bg-page;
+  border-radius: $radius-round;
+  overflow: hidden;
+  margin-bottom: $spacing-xs;
+}
+
+.fullCatBarFill {
+  height: 100%;
+  border-radius: $radius-round;
+  transition: width $transition-base ease;
+}
+
+.fullCatBottom {
+  display: flex;
+  justify-content: space-between;
+}
+
+.fullCatStat {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+/* ========== 普通视图 ========== */
+.summaryBar {
+  display: flex;
+  padding: $spacing-md $page-padding;
+  gap: $spacing-sm;
+}
+
+.summaryItem {
+  flex: 1;
+  padding: $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  text-align: center;
+}
+
+.summaryValue {
+  display: block;
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  line-height: 1.1;
+}
+
+.summaryLabel {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs / 2;
+}
+
+.summaryError .summaryValue { color: $color-error; }
+.summaryMastered .summaryValue { color: $color-success; }
+
+.categoryGrid {
+  padding: 0 $page-padding;
+  display: flex;
+  flex-direction: column;
   gap: $spacing-md;
 }
 
 .categoryCard {
-  padding: $spacing-lg $spacing-md;
+  padding: $spacing-lg;
   background-color: $color-bg-card;
   border-radius: $radius-lg;
   box-shadow: $shadow-card;
-  position: relative;
-  overflow: hidden;
-  transition: all $transition-base;
-
-  &:active {
-    transform: scale(0.98);
-  }
+  border-left: 8rpx solid $color-success;
 }
 
 .categoryError {
-  background-color: rgba(245, 63, 63, 0.04);
-  border: 2rpx solid rgba(245, 63, 63, 0.15);
+  border-left-color: $color-error;
+  background-color: rgba(255, 63, 63, 0.02);
 }
 
 .categoryOk {
-  background-color: rgba(0, 180, 42, 0.04);
-  border: 2rpx solid rgba(0, 180, 42, 0.15);
+  border-left-color: $color-success;
 }
 
 .categoryHeader {
   display: flex;
   align-items: center;
+  gap: $spacing-sm;
   margin-bottom: $spacing-sm;
 }
 
 .categoryIcon {
-  width: 56rpx;
-  height: 56rpx;
+  width: 64rpx;
+  height: 64rpx;
   border-radius: $radius-md;
-  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  background: linear-gradient(135deg, rgba(0, 180, 42, 0.1) 0%, rgba(123, 198, 22, 0.1) 100%);
+  color: $color-success;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: $font-size-lg;
-  margin-right: $spacing-sm;
+  font-size: 32rpx;
+  font-weight: $font-weight-bold;
+  flex-shrink: 0;
 }
 
 .categoryIconError {
-  background: linear-gradient(135deg, #F53F3F 0%, #FF7D00 100%);
+  background: linear-gradient(135deg, rgba(245, 63, 63, 0.1) 0%, rgba(255, 125, 0, 0.1) 100%);
+  color: $color-error;
 }
 
 .categoryTitle {
-  font-size: $font-size-md;
+  font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
 }
 
+.categoryDesc {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-md;
+  line-height: 1.4;
+}
+
 .categoryProgress {
-  margin: $spacing-md 0 $spacing-sm;
+  margin-bottom: $spacing-md;
 }
 
 .progressBar {
-  height: 12rpx;
+  height: 14rpx;
   background-color: $color-bg-page;
   border-radius: $radius-round;
   overflow: hidden;
@@ -159,9 +509,13 @@
 
 .progressFill {
   height: 100%;
-  border-radius: $radius-round;
   background: linear-gradient(90deg, $color-success 0%, #7BC616 100%);
-  transition: width 0.3s ease;
+  border-radius: $radius-round;
+  transition: width $transition-base ease;
+}
+
+.categoryError .progressFill {
+  background: linear-gradient(90deg, $color-error 0%, #FF7D00 100%);
 }
 
 .progressText {
@@ -171,117 +525,106 @@
 
 .categoryBadge {
   display: inline-block;
-  margin-top: $spacing-sm;
-  padding: $spacing-xs $spacing-sm;
-  background-color: rgba(245, 63, 63, 0.1);
+  padding: $spacing-xs $spacing-md;
+  background-color: rgba(245, 63, 63, 0.08);
   color: $color-error;
-  font-size: $font-size-xs;
-  border-radius: $radius-xs;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
 }
 
 .categoryBadgeOk {
-  background-color: rgba(0, 180, 42, 0.1);
+  background-color: rgba(0, 180, 42, 0.08);
   color: $color-success;
 }
 
-.practiceBtn {
-  @include button-reset;
-  width: 100%;
-  height: $button-height-md;
-  margin-top: $spacing-md;
-  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
-  color: $color-text-white;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  border-radius: $radius-button;
-
-  &:active {
-    opacity: 0.9;
-  }
+.practiceBtnRow {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-xs;
 }
 
+.practiceBtnBig {
+  flex: 1;
+  height: $button-height-lg;
+  background: linear-gradient(135deg, #FF7D00 0%, #FF9F1A 100%);
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  @include button-reset;
+  &:active { opacity: 0.9; }
+}
+
+.practiceBtnSecondary {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  background-color: $color-bg-page;
+  color: $color-primary;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  border-radius: $radius-button;
+  border: 2rpx solid rgba(30, 95, 168, 0.2);
+  &:active { opacity: 0.9; }
+}
+
+/* ========== 任务视图 ========== */
 .taskSection {
-  padding: $spacing-lg $page-padding;
+  padding: $spacing-md $page-padding;
 }
 
 .sectionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   margin-bottom: $spacing-md;
 }
 
 .sectionTitle {
   font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
+  font-weight: $font-weight-bold;
   color: $color-text-primary;
 }
 
 .errorTaskCard {
+  padding: $spacing-lg;
   background-color: $color-bg-card;
   border-radius: $radius-lg;
-  padding: $spacing-lg;
-  margin-bottom: $spacing-md;
   box-shadow: $shadow-card;
-  border-left: 6rpx solid $color-error;
-
-  &:active {
-    transform: scale(0.99);
-  }
+  margin-bottom: $spacing-md;
 }
 
 .errorTaskTitle {
-  font-size: $font-size-md;
-  font-weight: $font-weight-semibold;
+  display: block;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
   color: $color-text-primary;
-  margin-bottom: $spacing-xs;
+  margin-bottom: $spacing-sm;
 }
 
 .errorTaskMeta {
   display: flex;
-  flex-wrap: wrap;
   gap: $spacing-sm;
-  margin-bottom: $spacing-sm;
+  margin-bottom: $spacing-md;
+  flex-wrap: wrap;
 }
 
 .errorTaskTag {
+  padding: 4rpx 16rpx;
+  background-color: $color-bg-page;
+  border-radius: $radius-sm;
   font-size: $font-size-xs;
   color: $color-text-tertiary;
-  background-color: $color-bg-page;
-  padding: $spacing-xs $spacing-sm;
-  border-radius: $radius-xs;
 }
 
 .errorItems {
-  background-color: rgba(245, 63, 63, 0.05);
-  padding: $spacing-sm $spacing-md;
-  border-radius: $radius-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
 }
 
 .errorItemLine {
+  display: block;
   font-size: $font-size-sm;
   color: $color-error;
-  line-height: $line-height-loose;
-
-  &::before {
-    content: '•';
-    margin-right: $spacing-xs;
-  }
-}
-
-.emptyState {
-  padding: $spacing-xl * 2 $page-padding;
-  text-align: center;
-}
-
-.emptyIcon {
-  font-size: 120rpx;
-  margin-bottom: $spacing-lg;
-  opacity: 0.3;
-}
-
-.emptyText {
-  font-size: $font-size-md;
-  color: $color-text-tertiary;
-  line-height: $line-height-normal;
+  line-height: 1.6;
+  padding: $spacing-xs 0;
 }

@@ -1,10 +1,12 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import Taro from '@tarojs/taro';
 import {
   Task, BorrowFormData, ReturnFormData, SimulatorStep,
   ScoreItem, SimulationResult, FormFeedback, RetryConfig,
   EMPTY_BORROW, EMPTY_RETURN, UserRole, PracticeMode,
-  CustomExam, ExamResult, ErrorCategoryKey, ERROR_CATEGORY_CONFIG, fieldToCategory
+  CustomExam, ExamResult, ErrorCategoryKey, ERROR_CATEGORY_CONFIG, fieldToCategory,
+  TeacherReviewItem, TeacherReviewSummary, CategoryTrend, WeeklyDashboard,
+  DailyCategoryStat, ContinuousPracticeConfig
 } from '@/types';
 
 const STORAGE_KEY = 'avm_results';
@@ -63,7 +65,6 @@ const saveExamResults = (d: ExamResult[]) => {
 };
 
 interface SimulatorContextType {
-  // state
   currentTask: Task | null;
   currentStep: SimulatorStep;
   borrowData: BorrowFormData;
@@ -81,7 +82,8 @@ interface SimulatorContextType {
   activeExamIndex: number;
   activeExamResults: SimulationResult[];
   expandedResultId: string | null;
-  // methods
+  continuousPractice: ContinuousPracticeConfig | null;
+  // base methods
   setCurrentTask: (task: Task | null) => void;
   setCurrentStep: (step: SimulatorStep) => void;
   setBorrowData: (data: Partial<BorrowFormData>) => void;
@@ -98,13 +100,23 @@ interface SimulatorContextType {
   setPracticeMode: (mode: PracticeMode) => void;
   setExpandedResultId: (id: string | null) => void;
   setActiveExamIndex: (idx: number) => void;
+  // exam & draft
   createCustomExam: (args: { title: string; role: UserRole; taskIds: string[] }) => CustomExam;
+  saveExamDraft: (args: { title: string; role: UserRole; taskIds: string[]; sourceId?: string }) => CustomExam;
+  duplicateCustomExam: (id: string, overrides?: Partial<{ title: string; role: UserRole; taskIds: string[] }>) => CustomExam | null;
+  updateCustomExam: (id: string, updates: Partial<CustomExam>) => boolean;
   deleteCustomExam: (id: string) => void;
   startCustomExam: (examId: string) => boolean;
   saveCurrentExamResult: (taskResult: SimulationResult) => boolean;
   finishCustomExam: (lastResult?: SimulationResult) => ExamResult | null;
   cancelCustomExam: () => void;
+  // category practice
   startCategoryPractice: (catKey: ErrorCategoryKey, role?: UserRole) => Task | null;
+  startContinuousCategoryPractice: (catKey: ErrorCategoryKey, count?: number, role?: UserRole) => Task | null;
+  advanceContinuousPractice: () => Task | null;
+  // teacher review & dashboard
+  getTeacherReviewSummary: () => TeacherReviewSummary;
+  getWeeklyDashboard: () => WeeklyDashboard;
 }
 
 const SimulatorContext = createContext<SimulatorContextType | undefined>(undefined);
@@ -133,6 +145,7 @@ export const SimulatorProvider: React.FC<P> = ({ children }) => {
   const [activeExamId, setActiveExamIdState] = useState<string | null>(null);
   const [activeExamIndex, setActiveExamIndexState] = useState<number>(0);
   const [activeExamResults, setActiveExamResults] = useState<SimulationResult[]>([]);
+  const [continuousPractice, setContinuousPractice] = useState<ContinuousPracticeConfig | null>(null);
   const [expandedResultId, setExpandedResultIdState] = useState<string | null>(() => {
     try { return (Taro.getStorageSync(EXPAND_KEY) as string) || null; } catch { return null; }
   });
@@ -457,6 +470,337 @@ export const SimulatorProvider: React.FC<P> = ({ children }) => {
     return pick;
   }, [currentRole, resetSimulation, activeExamId]);
 
+  // ===== Exam: draft / copy / update =====
+  const saveExamDraft = useCallback((args: { title: string; role: UserRole; taskIds: string[]; sourceId?: string }): CustomExam => {
+    const { title, role, taskIds, sourceId } = args;
+    const exam: CustomExam = {
+      id: `draft-${Date.now()}`,
+      title: title?.trim() || '未命名草稿',
+      role,
+      taskIds,
+      createdAt: new Date().toLocaleString('zh-CN'),
+      updatedAt: new Date().toLocaleString('zh-CN'),
+      createdBy: 'draft',
+      sourceId,
+    };
+    setCustomExams(prev => { const next = [exam, ...prev]; saveExams(next); return next; });
+    console.log('[SaveDraft]', { id: exam.id, taskCount: taskIds.length });
+    return exam;
+  }, []);
+
+  const duplicateCustomExam = useCallback((id: string, overrides?: Partial<{ title: string; role: UserRole; taskIds: string[] }>): CustomExam | null => {
+    const src = customExams.find(e => e.id === id);
+    if (!src) return null;
+    const exam: CustomExam = {
+      id: `copy-${Date.now()}`,
+      title: overrides?.title?.trim() || `${src.title} (副本)`,
+      role: overrides?.role || src.role,
+      taskIds: overrides?.taskIds || [...src.taskIds],
+      createdAt: new Date().toLocaleString('zh-CN'),
+      updatedAt: new Date().toLocaleString('zh-CN'),
+      createdBy: 'copy',
+      sourceId: src.id,
+    };
+    setCustomExams(prev => { const next = [exam, ...prev]; saveExams(next); return next; });
+    console.log('[DuplicateExam]', { from: src.id, to: exam.id, title: exam.title });
+    return exam;
+  }, [customExams]);
+
+  const updateCustomExam = useCallback((id: string, updates: Partial<CustomExam>): boolean => {
+    let found = false;
+    setCustomExams(prev => {
+      const next = prev.map(e => {
+        if (e.id !== id) return e;
+        found = true;
+        return { ...e, ...updates, updatedAt: new Date().toLocaleString('zh-CN') };
+      });
+      if (found) saveExams(next);
+      return found ? next : prev;
+    });
+    if (found) console.log('[UpdateExam]', { id });
+    return found;
+  }, []);
+
+  // ===== Continuous Category Practice =====
+  const startContinuousCategoryPractice = useCallback((catKey: ErrorCategoryKey, count = 5, role?: UserRole): Task | null => {
+    // eslint-disable-next-line
+    const { mockTasks } = require('@/data/mockTasks');
+    const cfg = ERROR_CATEGORY_CONFIG[catKey];
+    if (!cfg) return null;
+    const effectiveRole = role || currentRole;
+    const candidates = mockTasks.filter((t: Task) => {
+      if (!t.roles.includes(effectiveRole)) return false;
+      if (cfg.fields.includes('airworthinessTag') && !t.requireAirworthinessTag) return false;
+      if (cfg.fields.includes('disassemblyRecord') && !t.requireDisassemblyRecord) return false;
+      if (cfg.fields.includes('workCardNumber') && !t.requireWorkCardNumber) return false;
+      return true;
+    });
+    if (candidates.length === 0) return null;
+    const total = Math.min(count, candidates.length);
+    const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+    const picks: Task[] = shuffled.slice(0, total);
+    const first = picks[0];
+    if (role && role !== currentRole) {
+      setCurrentRoleState(role);
+      try { Taro.setStorageSync(ROLE_KEY, role); } catch { /* noop */ }
+    }
+    if (activeExamId) {
+      setActiveExamIdState(null);
+      setActiveExamIndex(0);
+      setActiveExamResults([]);
+    }
+    resetSimulation();
+    setContinuousPractice({
+      category: catKey,
+      totalTasks: picks.length,
+      currentIndex: 0,
+      taskIds: picks.map(t => t.id),
+    });
+    setCurrentTask(first);
+    setCurrentStep(cfg.borrow ? 'borrow' : 'return');
+    console.log('[StartContinuous]', { cat: catKey, total: picks.length, first: first.id });
+    return first;
+  }, [currentRole, resetSimulation, activeExamId, setActiveExamIndex]);
+
+  const advanceContinuousPractice = useCallback((): Task | null => {
+    // eslint-disable-next-line
+    const { mockTasks } = require('@/data/mockTasks');
+    if (!continuousPractice) return null;
+    const nextIdx = continuousPractice.currentIndex + 1;
+    if (nextIdx >= continuousPractice.taskIds.length) {
+      setContinuousPractice(null);
+      console.log('[ContinuousFinish]');
+      return null;
+    }
+    const nextTaskId = continuousPractice.taskIds[nextIdx];
+    const nextTask = mockTasks.find((t: Task) => t.id === nextTaskId);
+    if (!nextTask) { setContinuousPractice(null); return null; }
+    const cfg = ERROR_CATEGORY_CONFIG[continuousPractice.category];
+    setContinuousPractice({ ...continuousPractice, currentIndex: nextIdx });
+    resetSimulation();
+    setCurrentTask(nextTask);
+    setCurrentStep(cfg?.borrow ? 'borrow' : 'return');
+    console.log('[AdvanceContinuous]', { idx: nextIdx, task: nextTask.id });
+    return nextTask;
+  }, [continuousPractice, resetSimulation]);
+
+  // ===== Teacher Review Summary =====
+  const getTeacherReviewSummary = useCallback((): TeacherReviewSummary => {
+    // eslint-disable-next-line
+    const { mockTasks } = require('@/data/mockTasks');
+    const allItems: TeacherReviewItem[] = [];
+    results.forEach(r => {
+      const scores = [...r.borrowScore, ...r.returnScore];
+      // 推断身份：根据 tasks.roles 和 taskId 匹配（因为 SimulationResult 没存 role，这里从 task 取第一匹配）
+      const task = mockTasks.find((t: Task) => t.id === r.taskId);
+      scores.forEach((item, idx) => {
+        const cat = fieldToCategory(item.field);
+        allItems.push({
+          id: `${r.id}-${idx}`,
+          category: cat,
+          categoryLabel: ERROR_CATEGORY_CONFIG[cat].label,
+          taskId: r.taskId,
+          taskTitle: r.taskTitle,
+          resultId: r.id,
+          field: item.field,
+          step: item.step,
+          userAction: item.userAction,
+          correctAction: item.correctAction,
+          riskNote: item.riskNote,
+          mastered: item.mastered,
+          completedAt: r.completedAt,
+          score: item.score,
+          maxScore: item.maxScore,
+        });
+      });
+    });
+
+    const byCategory = {} as TeacherReviewSummary['byCategory'];
+    (Object.keys(ERROR_CATEGORY_CONFIG) as ErrorCategoryKey[]).forEach(k => {
+      byCategory[k] = { total: 0, pending: 0, mastered: 0, masteryRate: 0 };
+    });
+    allItems.forEach(i => {
+      byCategory[i.category].total += 1;
+      if (i.mastered) byCategory[i.category].mastered += 1;
+      else byCategory[i.category].pending += 1;
+    });
+    (Object.keys(byCategory) as ErrorCategoryKey[]).forEach(k => {
+      const c = byCategory[k];
+      c.masteryRate = c.total > 0 ? Math.round((c.mastered / c.total) * 100) : 0;
+    });
+
+    const byRole = {} as TeacherReviewSummary['byRole'];
+    (['material_clerk', 'apprentice', 'intern'] as UserRole[]).forEach(r => { byRole[r] = { total: 0, pending: 0, masteryRate: 0 }; });
+    results.forEach(r => {
+      const t = mockTasks.find((tt: Task) => tt.id === r.taskId);
+      if (!t) return;
+      const role = t.roles[0];
+      const scores = [...r.borrowScore, ...r.returnScore];
+      byRole[role].total += scores.length;
+      byRole[role].pending += scores.filter(s => !s.mastered).length;
+    });
+    (Object.keys(byRole) as UserRole[]).forEach(rk => {
+      const c = byRole[rk];
+      c.masteryRate = c.total > 0 ? Math.round(((c.total - c.pending) / c.total) * 100) : 0;
+    });
+
+    const byTask = {} as TeacherReviewSummary['byTask'];
+    results.forEach(r => {
+      if (!byTask[r.taskId]) byTask[r.taskId] = { title: r.taskTitle, total: 0, pending: 0, masteryRate: 0 };
+      const scores = [...r.borrowScore, ...r.returnScore];
+      byTask[r.taskId].total += scores.length;
+      byTask[r.taskId].pending += scores.filter(s => !s.mastered).length;
+    });
+    Object.keys(byTask).forEach(tk => {
+      const c = byTask[tk];
+      c.masteryRate = c.total > 0 ? Math.round(((c.total - c.pending) / c.total) * 100) : 0;
+    });
+
+    const sorted = [...allItems].sort((a, b) =>
+      new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+    );
+    const recentItems = sorted.slice(0, 50);
+    const topRiskItems = allItems
+      .filter(i => !i.mastered && i.riskNote)
+      .sort((a, b) => (a.maxScore - a.score) - (b.maxScore - b.score))
+      .slice(0, 20);
+
+    return {
+      totalCount: allItems.length,
+      pendingCount: allItems.filter(i => !i.mastered).length,
+      masteredCount: allItems.filter(i => i.mastered).length,
+      byCategory, byRole, byTask,
+      recentItems, topRiskItems,
+    };
+  }, [results]);
+
+  // ===== Weekly Dashboard =====
+  const getWeeklyDashboard = useCallback((): WeeklyDashboard => {
+    // eslint-disable-next-line
+    const { mockTasks } = require('@/data/mockTasks');
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - 6);
+    const fmt = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
+    const startStr = fmt(startOfWeek);
+    const endStr = fmt(today);
+
+    // 为每一天生成占位
+    const days: Date[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today); d.setDate(today.getDate() - i); days.push(d);
+    }
+    const dayStrs = days.map(fmt);
+
+    // 每日汇总：按 category × 日期统计
+    const dailyCategory: Record<string, Record<ErrorCategoryKey, { total: number; mastered: number; errors: number }>> = {};
+    dayStrs.forEach(ds => {
+      dailyCategory[ds] = {} as any;
+      (Object.keys(ERROR_CATEGORY_CONFIG) as ErrorCategoryKey[]).forEach(k => {
+        dailyCategory[ds][k] = { total: 0, mastered: 0, errors: 0 };
+      });
+    });
+
+    let totalPractices = 0;
+    let totalItems = 0;
+    let totalMastered = 0;
+    let weekAgoItems = 0;
+    let weekAgoMastered = 0;
+
+    const sevenDaysAgo = new Date(today); sevenDaysAgo.setDate(today.getDate() - 7);
+    const fourteenDaysAgo = new Date(today); fourteenDaysAgo.setDate(today.getDate() - 14);
+
+    results.forEach(r => {
+      const completed = new Date(r.completedAt);
+      const dStr = fmt(completed);
+      const scores = [...r.borrowScore, ...r.returnScore];
+      // 最近 7 天
+      if (completed >= startOfWeek && completed <= today) {
+        totalPractices += 1;
+        scores.forEach(item => {
+          totalItems += 1;
+          if (item.mastered) totalMastered += 1;
+          const cat = fieldToCategory(item.field);
+          if (dailyCategory[dStr]) {
+            dailyCategory[dStr][cat].total += 1;
+            if (item.mastered) dailyCategory[dStr][cat].mastered += 1;
+            else dailyCategory[dStr][cat].errors += 1;
+          }
+        });
+      }
+      // 上周同期（14 天前 ~ 7 天前），用来算趋势
+      if (completed >= fourteenDaysAgo && completed < sevenDaysAgo) {
+        scores.forEach(item => {
+          weekAgoItems += 1;
+          if (item.mastered) weekAgoMastered += 1;
+        });
+      }
+    });
+
+    const overallMasteryRate = totalItems > 0 ? Math.round((totalMastered / totalItems) * 100) : 0;
+    const weekAgoMasteryRate = weekAgoItems > 0 ? Math.round((weekAgoMastered / weekAgoItems) * 100) : 0;
+
+    // 每个分类的趋势
+    const catIcons: Record<ErrorCategoryKey, string> = {
+      partnumber: 'ID', serial: 'SN', tag: '🏷️', disassembly: '📋',
+      workcard: '📝', status: '🔍', repair: '⚠️', accessory: '🔧'
+    };
+    const categoryTrends: CategoryTrend[] = (Object.keys(ERROR_CATEGORY_CONFIG) as ErrorCategoryKey[]).map(k => {
+      const cfg = ERROR_CATEGORY_CONFIG[k];
+      const dailyStats: DailyCategoryStat[] = dayStrs.map(ds => {
+        const s = dailyCategory[ds][k];
+        return {
+          date: ds,
+          total: s.total,
+          mastered: s.mastered,
+          errors: s.errors,
+          masteryRate: s.total > 0 ? Math.round((s.mastered / s.total) * 100) : 0,
+        };
+      });
+      const curTotal = dailyStats.reduce((s, d) => s + d.total, 0);
+      const curMastered = dailyStats.reduce((s, d) => s + d.mastered, 0);
+      const curPending = curTotal - curMastered;
+      const currentRate = curTotal > 0 ? Math.round((curMastered / curTotal) * 100) : 0;
+
+      // 上周同期同类掌握率做估算：取总掌握率差值作为近似
+      const delta = currentRate - weekAgoMasteryRate;
+
+      return {
+        category: k,
+        label: cfg.label,
+        icon: catIcons[k],
+        currentRate,
+        weekAgoRate: weekAgoMasteryRate,
+        delta,
+        dailyStats,
+        total: curTotal,
+        mastered: curMastered,
+        pending: curPending,
+      };
+    });
+
+    // 待掌握最多的前三（热点）
+    const hotCategories = categoryTrends
+      .filter(c => c.total > 0)
+      .sort((a, b) => b.pending - a.pending)
+      .slice(0, 3)
+      .map(c => c.category);
+
+    // 进步最快的前三（delta 最大）
+    const improvingCategories = categoryTrends
+      .filter(c => c.total > 0 && c.delta > 0)
+      .sort((a, b) => b.delta - a.delta)
+      .slice(0, 3)
+      .map(c => c.category);
+
+    return {
+      startDate: startStr, endDate: endStr,
+      totalPractices, totalItems,
+      overallMasteryRate, weekAgoMasteryRate,
+      categoryTrends, hotCategories, improvingCategories,
+    };
+  }, [results]);
+
   return (
     <SimulatorContext.Provider
       value={{
@@ -465,16 +809,18 @@ export const SimulatorProvider: React.FC<P> = ({ children }) => {
         retryConfig, currentRole, practiceMode,
         customExams, examResults,
         activeExamId, activeExamIndex, activeExamResults,
-        expandedResultId,
+        expandedResultId, continuousPractice,
         setCurrentTask, setCurrentStep, setBorrowData, setReturnData,
         validateBorrowForm, validateReturnForm, calculateScore,
         resetSimulation, addResult, updateResultItem,
         startRetry, clearRetry,
         setCurrentRole, setPracticeMode, setExpandedResultId,
         setActiveExamIndex,
-        createCustomExam, deleteCustomExam,
+        createCustomExam, saveExamDraft, duplicateCustomExam, updateCustomExam,
+        deleteCustomExam,
         startCustomExam, saveCurrentExamResult, finishCustomExam, cancelCustomExam,
-        startCategoryPractice,
+        startCategoryPractice, startContinuousCategoryPractice, advanceContinuousPractice,
+        getTeacherReviewSummary, getWeeklyDashboard,
       }}
     >
       {children}

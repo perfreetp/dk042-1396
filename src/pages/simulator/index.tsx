@@ -25,6 +25,7 @@ const SimulatorPage: React.FC = () => {
     activeExamIndex,
     activeExamResults,
     customExams,
+    continuousPractice,
     setCurrentStep,
     setBorrowData,
     setReturnData,
@@ -40,11 +41,13 @@ const SimulatorPage: React.FC = () => {
     finishCustomExam,
     setCurrentTask,
     setActiveExamIndex,
+    advanceContinuousPractice,
   } = useSimulator();
 
   const isRetryMode = !!retryConfig;
   const isExamMode = practiceMode === 'exam';
   const isCustomExam = !!activeExamId;
+  const isContinuousPractice = !!continuousPractice;
   const exam = isCustomExam ? customExams.find(e => e.id === activeExamId) : null;
 
   const handleNextStep = () => {
@@ -115,6 +118,46 @@ const SimulatorPage: React.FC = () => {
     }
     // 普通模式：保存
     addResult(currentResult);
+
+    // 连续重练模式：推进下一题 or 结束
+    if (isContinuousPractice && continuousPractice) {
+      const curIdx = continuousPractice.currentIndex;
+      const total = continuousPractice.totalTasks;
+      const isLast = curIdx >= total - 1;
+
+      if (isLast) {
+        Taro.showModal({
+          title: '🎉 连续练习完成',
+          content: `本轮连续 ${total} 道练习已完成，可回到错题本查看掌握率变化。`,
+          showCancel: true,
+          cancelText: '留在本页',
+          confirmText: '返回错题本',
+          confirmColor: '#1E5FA8',
+          success: (r) => {
+            if (r.confirm) {
+              Taro.switchTab({ url: '/pages/wrongbook/index' });
+            }
+          }
+        });
+        return;
+      }
+
+      // 不是最后一题：推进
+      Taro.showToast({ title: `已完成 ${curIdx + 1}/${total}`, icon: 'success' });
+      setTimeout(() => {
+        const nextTask = advanceContinuousPractice();
+        if (!nextTask) {
+          // 推进失败，直接回错题本
+          Taro.showToast({ title: '连续练习完成', icon: 'success' });
+          setTimeout(() => Taro.switchTab({ url: '/pages/wrongbook/index' }), 1000);
+        } else {
+          // 下一题已经通过 advance 内部 reset 并 setCurrentTask + borrow，无需再操作
+          setCurrentStep('borrow');
+        }
+      }, 900);
+      return;
+    }
+
     Taro.showToast({ title: '成绩已保存', icon: 'success' });
     setTimeout(() => Taro.switchTab({ url: '/pages/results/index' }), 1200);
   };
@@ -230,8 +273,13 @@ const SimulatorPage: React.FC = () => {
           <View className={styles.metaItem}>飞机：{currentTask.aircraft}</View>
           <View className={styles.metaItem}>部件：{currentTask.partName}</View>
           {isRetryMode && <View className={classnames(styles.metaItem, styles.metaRetry)}>错题重练 · {fieldNameMap[retryField || '']}</View>}
-          {isExamMode && !isRetryMode && <View className={classnames(styles.metaItem, styles.metaExam)}>考试模式</View>}
+          {isExamMode && !isRetryMode && !isCustomExam && <View className={classnames(styles.metaItem, styles.metaExam)}>考试模式</View>}
           {isCustomExam && <View className={classnames(styles.metaItem, styles.metaExam)}>{exam?.title}</View>}
+          {isContinuousPractice && continuousPractice && (
+            <View className={classnames(styles.metaItem, styles.metaContinuous)}>
+              🎯 连续练习 · {continuousPractice.currentIndex + 1}/{continuousPractice.totalTasks}
+            </View>
+          )}
         </View>
       </View>
 

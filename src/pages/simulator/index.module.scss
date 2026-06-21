@@ -249,6 +249,12 @@
   font-weight: $font-weight-semibold;
 }
 
+.metaContinuous {
+  background-color: rgba(82, 196, 26, 0.85) !important;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white !important;
+}
+
 .examNote {
   display: flex;
   align-items: flex-start;

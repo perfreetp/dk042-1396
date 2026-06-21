@@ -358,3 +358,459 @@
   50% { box-shadow: 0 0 20rpx 8rpx rgba(30, 95, 168, 0.2); }
   100% { box-shadow: $shadow-card; }
 }
+
+.viewTabs {
+  display: flex;
+  margin: $spacing-md $page-padding;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 6rpx;
+  box-shadow: $shadow-card;
+}
+
+.viewTab {
+  flex: 1;
+  text-align: center;
+  padding: $spacing-md 0;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+}
+
+.viewTabActive {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+  box-shadow: 0 4rpx 12rpx rgba(30, 95, 168, 0.25);
+}
+
+.reviewOverview {
+  padding: $spacing-md $page-padding;
+}
+
+.reviewOverviewGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-xs;
+  background: linear-gradient(135deg, #EAF2FC 0%, $color-bg-card 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-sm;
+  box-shadow: $shadow-card;
+}
+
+.reviewOverviewItem {
+  text-align: center;
+  padding: $spacing-sm 4rpx;
+}
+
+.reviewOverviewValue {
+  display: block;
+  font-size: 44rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  line-height: 1.2;
+}
+
+.masteredBg .reviewOverviewValue { color: $color-success; }
+.pendingBg .reviewOverviewValue { color: $color-error; }
+.rateBg .reviewOverviewValue { color: #873800; }
+
+.reviewOverviewLabel {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.reviewFilterBar {
+  display: flex;
+  gap: $spacing-sm;
+  padding: $spacing-sm $page-padding;
+  overflow-x: auto;
+  @include scroll-x-container;
+}
+
+.reviewFilterChip {
+  @include scroll-x-item(auto);
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  border: 2rpx solid $color-border;
+  white-space: nowrap;
+}
+
+.reviewFilterChipActive {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  border-color: transparent;
+  font-weight: $font-weight-semibold;
+}
+
+.reviewSection {
+  padding: $spacing-md $page-padding;
+}
+
+.reviewSectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reviewClearFilter {
+  font-size: $font-size-sm;
+  color: $color-error;
+  font-weight: $font-weight-medium;
+}
+
+.reviewCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-sm;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+  transition: all $transition-base;
+  border: 2rpx solid transparent;
+}
+
+.reviewCardActive {
+  border-color: rgba(30, 95, 168, 0.3);
+  background-color: rgba(30, 95, 168, 0.02);
+}
+
+.reviewCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-lg;
+}
+
+.reviewCardLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex: 1;
+  min-width: 0;
+}
+
+.catBadge {
+  padding: $spacing-xs $spacing-sm;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  white-space: nowrap;
+}
+
+.catBadgeSmall {
+  padding: 4rpx 12rpx;
+  background-color: rgba(30, 95, 168, 0.1);
+  color: $color-primary;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+.reviewCardMeta {
+  flex: 1;
+  min-width: 0;
+}
+
+.reviewCardMetaText {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.reviewCardMetaSub {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 2rpx;
+}
+
+.reviewCardTitleText {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 2rpx;
+  @include text-ellipsis;
+}
+
+.reviewCardRight {
+  flex-shrink: 0;
+}
+
+.rateCircle {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+}
+
+.rateOk { background: conic-gradient($color-success 0% 100%, #E8F7E8 0%); color: $color-success; }
+.rateMid { background: conic-gradient($color-warning 0% 70%, #FFF4E8 0%); color: $color-warning; }
+.rateLow { background: conic-gradient($color-error 0% 100%, #FDEDED 0%); color: $color-error; }
+
+.reviewCardBody {
+  padding: 0 $spacing-lg $spacing-lg;
+  border-top: 1rpx solid $color-divider;
+}
+
+.reviewCardSuggestion {
+  margin-top: $spacing-md;
+  padding: $spacing-md;
+  background-color: rgba(30, 95, 168, 0.05);
+  border-radius: $radius-md;
+}
+
+.suggestionLabel {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-sm;
+}
+
+.suggestionBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-md;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  &:active { opacity: 0.9; }
+}
+
+.reviewLineCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+  box-shadow: $shadow-card;
+  border-left: 6rpx solid $color-border;
+  transition: all $transition-base;
+}
+
+.reviewLineCardActive {
+  border-left-color: $color-primary;
+  background-color: rgba(30, 95, 168, 0.03);
+}
+
+.reviewLineTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-xs;
+}
+
+.reviewLineBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.reviewLinePending {
+  padding: 4rpx 12rpx;
+  background-color: rgba(245, 63, 63, 0.1);
+  color: $color-error;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.reviewLineMastered {
+  padding: 4rpx 12rpx;
+  background-color: rgba(0, 180, 42, 0.1);
+  color: $color-success;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.reviewLineTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.reviewLineTask {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.reviewLineTwo {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-xs;
+  margin-top: $spacing-xs;
+}
+
+.reviewLineCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.reviewLineLabelGood {
+  font-size: $font-size-xs;
+  color: $color-success;
+  font-weight: $font-weight-medium;
+  margin-bottom: 2rpx;
+}
+
+.reviewLineLabelBad {
+  font-size: $font-size-xs;
+  color: $color-error;
+  font-weight: $font-weight-medium;
+  margin-bottom: 2rpx;
+}
+
+.reviewLineTextGood {
+  font-size: $font-size-sm;
+  color: #007A00;
+  line-height: 1.5;
+}
+
+.reviewLineTextBad {
+  font-size: $font-size-sm;
+  color: $color-error;
+  line-height: 1.5;
+}
+
+.reviewLineRisk {
+  margin-top: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background-color: rgba(255, 125, 0, 0.08);
+  border-radius: $radius-sm;
+  border-left: 4rpx solid #FF7D00;
+}
+
+.reviewLineRiskText {
+  font-size: $font-size-xs;
+  color: #873800;
+  line-height: 1.6;
+}
+
+.reviewLineActions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.riskCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  border-left: 6rpx solid $color-error;
+}
+
+.riskTitleRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-sm;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.riskTaskText {
+  flex: 1;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.riskItemRow {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: $spacing-xs;
+  gap: $spacing-xs;
+}
+
+.riskItemLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+  min-width: 140rpx;
+}
+
+.riskItemValueBad {
+  font-size: $font-size-sm;
+  color: $color-error;
+  flex: 1;
+  line-height: 1.5;
+}
+
+.riskItemValueGood {
+  font-size: $font-size-sm;
+  color: $color-success;
+  flex: 1;
+  line-height: 1.5;
+}
+
+.riskItemTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.riskNoteBox {
+  margin: $spacing-md 0;
+  padding: $spacing-md;
+  background-color: rgba(255, 125, 0, 0.08);
+  border-radius: $radius-md;
+}
+
+.riskNoteLabel {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: #873800;
+  margin-bottom: $spacing-xs;
+}
+
+.riskNoteText {
+  font-size: $font-size-sm;
+  color: #A84800;
+  line-height: 1.6;
+}
+
+.riskRetryBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-md;
+  margin-top: $spacing-sm;
+  background: linear-gradient(135deg, $color-error 0%, #FF7D00 100%);
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  &:active { opacity: 0.9; transform: scale(0.98); }
+}
+
+.reviewEmpty {
+  padding: $spacing-xl;
+  text-align: center;
+  color: $color-text-tertiary;
+  font-size: $font-size-md;
+}

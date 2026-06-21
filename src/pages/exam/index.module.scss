@@ -333,3 +333,302 @@
   background: $color-border !important;
   color: $color-text-tertiary !important;
 }
+
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  width: auto;
+  min-width: 240rpx;
+  justify-content: flex-end;
+}
+
+.viewSwitch {
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+  background-color: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.viewSwitchActive {
+  background-color: rgba(255, 255, 255, 0.3);
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0 12rpx;
+  background-color: $color-error;
+  color: $color-text-white;
+  font-size: $font-size-xs;
+  border-radius: $radius-round;
+  min-width: 28rpx;
+  text-align: center;
+  line-height: 28rpx;
+}
+
+.editBanner {
+  margin: $spacing-md $page-padding 0;
+  padding: $spacing-sm $spacing-md;
+  background-color: rgba(255, 125, 0, 0.08);
+  border-radius: $radius-md;
+  border: 2rpx solid rgba(255, 125, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.editBannerText {
+  font-size: $font-size-sm;
+  color: #873800;
+  font-weight: $font-weight-medium;
+}
+
+.editBannerClear {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.draftBtn {
+  @include button-reset;
+  padding: 0 $spacing-md;
+  height: $button-height-lg;
+  background-color: $color-bg-page;
+  color: $color-text-secondary;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  border: 2rpx solid $color-border;
+  &:active { opacity: 0.9; }
+  &[disabled] {
+    background-color: $color-bg-page;
+    color: $color-text-tertiary;
+    border-color: $color-border;
+  }
+}
+
+.bottomActions {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.savedHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-lg $page-padding;
+  background-color: $color-bg-card;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.savedHeaderInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.savedHeaderTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.savedHeaderSub {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.savedHeaderAction {
+  padding: $spacing-sm $spacing-md;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-button;
+}
+
+.savedHeaderActionText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.examCard {
+  margin: $spacing-md $page-padding 0;
+  padding: $spacing-lg;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.examCardHeader {
+  margin-bottom: $spacing-md;
+}
+
+.examCardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+}
+
+.examTypeTag {
+  padding: 4rpx 16rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  white-space: nowrap;
+}
+
+.examTypeFormal {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+}
+
+.examTypeDraft {
+  background-color: rgba(130, 130, 130, 0.15);
+  color: #555;
+}
+
+.examTypeCopy {
+  background-color: rgba(82, 196, 26, 0.15);
+  color: #007A00;
+}
+
+.examCardTitle {
+  flex: 1;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.examCardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.metaChip {
+  display: flex;
+  align-items: center;
+}
+
+.metaChipLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.metaChipValue {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.examCardBody {
+  padding: $spacing-md;
+  background-color: $color-bg-page;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+}
+
+.examTaskHint {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-xs;
+  display: block;
+}
+
+.examTaskList {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.examTaskItem {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+.examTaskMore {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.examCardActions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-xs;
+}
+
+.examActionBtn {
+  padding: $spacing-sm;
+  text-align: center;
+  background-color: $color-bg-page;
+  border-radius: $radius-md;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+  &:active { transform: scale(0.96); }
+}
+
+.examActionPrimary {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.examActionText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.examActionDanger {
+  font-size: $font-size-sm;
+  color: $color-error;
+}
+
+.savedEmpty {
+  padding: $spacing-xl * 2 $page-padding;
+  text-align: center;
+}
+
+.savedEmptyIcon {
+  display: block;
+  font-size: 120rpx;
+  opacity: 0.3;
+  margin-bottom: $spacing-lg;
+}
+
+.savedEmptyTitle {
+  display: block;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.savedEmptyDesc {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-xl;
+  line-height: 1.6;
+}
+
+.savedEmptyBtn {
+  display: inline-block;
+  padding: $spacing-md $spacing-xl;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-button;
+}
+
+.savedEmptyBtnText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}

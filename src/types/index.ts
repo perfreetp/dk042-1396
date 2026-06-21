@@ -145,7 +145,9 @@ export interface CustomExam {
   role: UserRole;
   taskIds: string[];
   createdAt: string;
-  createdBy: 'teacher' | 'custom';
+  createdBy: 'teacher' | 'custom' | 'draft' | 'copy';
+  updatedAt?: string;
+  sourceId?: string;
 }
 
 export interface ExamResult {
@@ -157,6 +159,77 @@ export interface ExamResult {
   completedAt: string;
   comment: string;
 }
+
+export interface TeacherReviewItem {
+  id: string;
+  category: ErrorCategoryKey;
+  categoryLabel: string;
+  taskId: string;
+  taskTitle: string;
+  resultId: string;
+  field: string;
+  step: string;
+  userAction: string;
+  correctAction: string;
+  riskNote: string;
+  mastered: boolean;
+  completedAt: string;
+  score: number;
+  maxScore: number;
+}
+
+export interface TeacherReviewSummary {
+  totalCount: number;
+  pendingCount: number;
+  masteredCount: number;
+  byCategory: Record<ErrorCategoryKey, { total: number; pending: number; mastered: number; masteryRate: number }>;
+  byRole: Record<UserRole, { total: number; pending: number; masteryRate: number }>;
+  byTask: Record<string, { title: string; total: number; pending: number; masteryRate: number }>;
+  recentItems: TeacherReviewItem[];
+  topRiskItems: TeacherReviewItem[];
+}
+
+export interface DailyCategoryStat {
+  date: string;
+  masteryRate: number;
+  total: number;
+  mastered: number;
+  errors: number;
+}
+
+export interface CategoryTrend {
+  category: ErrorCategoryKey;
+  label: string;
+  icon: string;
+  currentRate: number;
+  weekAgoRate: number;
+  delta: number;
+  dailyStats: DailyCategoryStat[];
+  total: number;
+  mastered: number;
+  pending: number;
+}
+
+export interface WeeklyDashboard {
+  startDate: string;
+  endDate: string;
+  totalPractices: number;
+  totalItems: number;
+  overallMasteryRate: number;
+  weekAgoMasteryRate: number;
+  categoryTrends: CategoryTrend[];
+  hotCategories: ErrorCategoryKey[];
+  improvingCategories: ErrorCategoryKey[];
+}
+
+export interface ContinuousPracticeConfig {
+  category: ErrorCategoryKey;
+  totalTasks: number;
+  currentIndex: number;
+  taskIds: string[];
+}
+
+export type ResultsViewMode = 'history' | 'review' | 'dashboard';
 
 export const EMPTY_BORROW: BorrowFormData = {
   partNumber: '',
