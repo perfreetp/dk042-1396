@@ -1,0 +1,335 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 160rpx);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(env(safe-area-inset-top) + #{$spacing-md}) $page-padding $spacing-md;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+}
+
+.back {
+  font-size: $font-size-md;
+  color: $color-text-white;
+  width: 80rpx;
+}
+
+.pageTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.content {
+  height: calc(100vh - 88rpx - env(safe-area-inset-top) - 160rpx);
+}
+
+.card {
+  margin: $spacing-lg $page-padding 0;
+  padding: $spacing-lg;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.cardLabel {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.cardHeader .cardLabel {
+  margin-bottom: 0;
+}
+
+.selectedCount {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.roleBar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: $spacing-sm;
+}
+
+.roleChip {
+  padding: $spacing-md $spacing-sm;
+  border-radius: $radius-md;
+  border: 2rpx solid $color-border;
+  background-color: $color-bg-page;
+  text-align: center;
+  transition: all $transition-base;
+}
+
+.roleChipActive {
+  border-color: $color-primary;
+  background-color: rgba(30, 95, 168, 0.06);
+  box-shadow: 0 2rpx 8rpx rgba(30, 95, 168, 0.15);
+}
+
+.roleChipLabel {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.roleChipDesc {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.titleInput {
+  width: 100%;
+  padding: $spacing-md $spacing-lg;
+  background-color: $color-bg-page;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.titlePresetRow {
+  display: flex;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+  margin-top: $spacing-sm;
+}
+
+.titlePreset {
+  padding: $spacing-xs $spacing-md;
+  background-color: rgba(30, 95, 168, 0.08);
+  color: $color-primary;
+  font-size: $font-size-xs;
+  border-radius: $radius-sm;
+}
+
+.focusBar {
+  white-space: nowrap;
+  padding-bottom: $spacing-sm;
+}
+
+.focusChip {
+  display: inline-block;
+  padding: $spacing-sm $spacing-md;
+  margin-right: $spacing-sm;
+  background-color: $color-bg-page;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.focusChipActive {
+  border-color: $color-primary;
+  background-color: rgba(30, 95, 168, 0.08);
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.checkAllRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-sm 0 $spacing-md;
+  border-bottom: 1rpx solid $color-divider;
+  margin-bottom: $spacing-md;
+}
+
+.checkAll {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+}
+
+.checkAllOn {
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.checkAllText {
+  font-size: $font-size-sm;
+}
+
+.clearSelected {
+  font-size: $font-size-sm;
+  color: $color-error;
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  max-height: 60vh;
+}
+
+.taskItem {
+  display: flex;
+  align-items: flex-start;
+  padding: $spacing-md;
+  background-color: $color-bg-page;
+  border: 2rpx solid transparent;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+}
+
+.taskItemOn {
+  border-color: $color-primary;
+  background-color: rgba(30, 95, 168, 0.04);
+}
+
+.taskCheckbox {
+  margin-right: $spacing-md;
+  padding-top: 4rpx;
+  font-size: $font-size-lg;
+}
+
+.checkOn { color: $color-primary; font-weight: $font-weight-bold; }
+.checkOff { color: $color-text-tertiary; }
+
+.taskMain { flex: 1; }
+
+.taskTop {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-xs;
+}
+
+.taskIndex {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-medium;
+}
+
+.taskTitle {
+  flex: 1;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  line-height: 1.4;
+}
+
+.taskDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+  line-height: 1.5;
+}
+
+.taskFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.diffTag {
+  font-size: $font-size-xs;
+  padding: 4rpx $spacing-sm;
+  border-radius: $radius-sm;
+  font-weight: $font-weight-medium;
+}
+
+.diffEasy { background-color: rgba(82, 196, 26, 0.1); color: #007A00; }
+.diffMedium { background-color: rgba(255, 125, 0, 0.1); color: #C93400; }
+.diffHard { background-color: rgba(245, 63, 63, 0.1); color: #A61200; }
+
+.focusTagRow {
+  display: flex;
+  gap: $spacing-xs;
+  flex-wrap: wrap;
+}
+
+.focusTag {
+  font-size: $font-size-xs;
+  padding: 4rpx $spacing-sm;
+  background-color: rgba(30, 95, 168, 0.08);
+  color: $color-primary;
+  border-radius: $radius-sm;
+}
+
+.focusTagMore {
+  font-size: $font-size-xs;
+  padding: 4rpx $spacing-sm;
+  color: $color-text-tertiary;
+}
+
+.emptyHint {
+  padding: $spacing-xl;
+  text-align: center;
+  color: $color-text-tertiary;
+  font-size: $font-size-sm;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: $spacing-md $page-padding calc(env(safe-area-inset-bottom) + #{$spacing-md});
+  background-color: $color-bg-card;
+  border-top: 1rpx solid $color-divider;
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.bottomInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.bottomInfoText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.bottomInfoSub {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.submitBtn {
+  @include button-reset;
+  padding: 0 $spacing-xl;
+  height: $button-height-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+
+  &:active { opacity: 0.9; transform: scale(0.98); }
+}
+
+.submitBtnDisabled {
+  background: $color-border !important;
+  color: $color-text-tertiary !important;
+}

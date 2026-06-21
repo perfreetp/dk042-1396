@@ -1,0 +1,287 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, rgba(30, 95, 168, 0.05) 0%, $color-bg-page 100%);
+  padding-bottom: calc(env(safe-area-inset-bottom) + #{$spacing-xl});
+}
+
+.header {
+  padding: $spacing-xl $page-padding $spacing-lg;
+  background-color: $color-bg-card;
+}
+
+.title {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.subtitle {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.summaryBar {
+  display: flex;
+  gap: $spacing-sm;
+  padding: $spacing-md $page-padding;
+  background-color: $color-bg-card;
+  border-top: 1rpx solid $color-divider;
+}
+
+.summaryItem {
+  flex: 1;
+  padding: $spacing-md $spacing-sm;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-md;
+  text-align: center;
+}
+
+.summaryError {
+  background: linear-gradient(135deg, #F53F3F 0%, #FF7D00 100%);
+}
+
+.summaryMastered {
+  background: linear-gradient(135deg, #00B42A 0%, #7BC616 100%);
+}
+
+.summaryValue {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  line-height: 1.2;
+}
+
+.summaryLabel {
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: $spacing-xs;
+}
+
+.filterTabs {
+  display: flex;
+  gap: $spacing-xs;
+  padding: $spacing-md $page-padding;
+  background-color: $color-bg-card;
+  border-top: 1rpx solid $color-divider;
+  overflow-x: auto;
+
+  @include scroll-x-container;
+}
+
+.filterTab {
+  @include scroll-x-item(auto);
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-button;
+  background-color: $color-bg-page;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  white-space: nowrap;
+
+  &.active {
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+    color: $color-text-white;
+  }
+}
+
+.categoryGrid {
+  padding: $spacing-lg $page-padding;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+}
+
+.categoryCard {
+  padding: $spacing-lg $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  position: relative;
+  overflow: hidden;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.categoryError {
+  background-color: rgba(245, 63, 63, 0.04);
+  border: 2rpx solid rgba(245, 63, 63, 0.15);
+}
+
+.categoryOk {
+  background-color: rgba(0, 180, 42, 0.04);
+  border: 2rpx solid rgba(0, 180, 42, 0.15);
+}
+
+.categoryHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.categoryIcon {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: $radius-md;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-lg;
+  margin-right: $spacing-sm;
+}
+
+.categoryIconError {
+  background: linear-gradient(135deg, #F53F3F 0%, #FF7D00 100%);
+}
+
+.categoryTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.categoryProgress {
+  margin: $spacing-md 0 $spacing-sm;
+}
+
+.progressBar {
+  height: 12rpx;
+  background-color: $color-bg-page;
+  border-radius: $radius-round;
+  overflow: hidden;
+  margin-bottom: $spacing-xs;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: $radius-round;
+  background: linear-gradient(90deg, $color-success 0%, #7BC616 100%);
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.categoryBadge {
+  display: inline-block;
+  margin-top: $spacing-sm;
+  padding: $spacing-xs $spacing-sm;
+  background-color: rgba(245, 63, 63, 0.1);
+  color: $color-error;
+  font-size: $font-size-xs;
+  border-radius: $radius-xs;
+}
+
+.categoryBadgeOk {
+  background-color: rgba(0, 180, 42, 0.1);
+  color: $color-success;
+}
+
+.practiceBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-md;
+  margin-top: $spacing-md;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.taskSection {
+  padding: $spacing-lg $page-padding;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.errorTaskCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  border-left: 6rpx solid $color-error;
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.errorTaskTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.errorTaskMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+}
+
+.errorTaskTag {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  background-color: $color-bg-page;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-xs;
+}
+
+.errorItems {
+  background-color: rgba(245, 63, 63, 0.05);
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+}
+
+.errorItemLine {
+  font-size: $font-size-sm;
+  color: $color-error;
+  line-height: $line-height-loose;
+
+  &::before {
+    content: '•';
+    margin-right: $spacing-xs;
+  }
+}
+
+.emptyState {
+  padding: $spacing-xl * 2 $page-padding;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  margin-bottom: $spacing-lg;
+  opacity: 0.3;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  line-height: $line-height-normal;
+}

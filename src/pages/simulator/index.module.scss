@@ -238,3 +238,64 @@
   color: $color-text-secondary;
   line-height: $line-height-normal;
 }
+
+.metaRetry {
+  background-color: rgba(255, 125, 0, 0.8) !important;
+  font-weight: $font-weight-semibold;
+}
+
+.metaExam {
+  background-color: rgba(245, 63, 63, 0.85) !important;
+  font-weight: $font-weight-semibold;
+}
+
+.examNote {
+  display: flex;
+  align-items: flex-start;
+  padding: $spacing-md;
+  margin-top: $spacing-md;
+  background-color: rgba(255, 125, 0, 0.08);
+  border: 2rpx solid rgba(255, 125, 0, 0.2);
+  border-radius: $radius-md;
+}
+
+.examNoteIcon {
+  font-size: $font-size-lg;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.examNoteText {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: #C93400;
+  line-height: $line-height-normal;
+}
+
+.modeTag {
+  margin-left: $spacing-xs;
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: $font-weight-medium;
+}
+
+.instructorNote {
+  margin-top: $spacing-lg;
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, rgba(30, 95, 168, 0.05) 0%, rgba(58, 157, 255, 0.05) 100%);
+  border: 2rpx solid rgba(30, 95, 168, 0.15);
+  border-radius: $radius-lg;
+}
+
+.instructorTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.instructorText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  line-height: $line-height-loose;
+}

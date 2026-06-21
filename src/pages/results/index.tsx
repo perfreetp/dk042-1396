@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, Button, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import classnames from 'classnames';
@@ -9,8 +9,20 @@ import { SimulationResult, ScoreItem as ScoreItemType, RetryConfig } from '@/typ
 import { mockTasks } from '@/data/mockTasks';
 
 const ResultsPage: React.FC = () => {
-  const { results, resetSimulation, startRetry } = useSimulator();
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const {
+    results, resetSimulation, startRetry,
+    expandedResultId, setExpandedResultId
+  } = useSimulator();
+  const [internalExpanded, setInternalExpanded] = useState<string | null>(null);
+
+  // 对外界设置的 expandedResultId 做响应
+  const effectiveExpanded = internalExpanded || expandedResultId;
+
+  useEffect(() => {
+    if (expandedResultId && expandedResultId !== internalExpanded) {
+      setInternalExpanded(expandedResultId);
+    }
+  }, [expandedResultId, internalExpanded]);
 
   const stats = useMemo(() => {
     if (results.length === 0) return { count: 0, avgScore: 0, passRate: 0 };
@@ -22,28 +34,23 @@ const ResultsPage: React.FC = () => {
     return { count: results.length, avgScore, passRate };
   }, [results]);
 
-  const errorCount = useMemo(() => {
-    return results.reduce((sum, r) => {
-      return sum + [...r.borrowScore, ...r.returnScore].filter(i => !i.isCorrect).length;
-    }, 0);
-  }, [results]);
+  const errorCount = useMemo(() => results.reduce(
+    (sum, r) => sum + [...r.borrowScore, ...r.returnScore].filter(i => !i.mastered).length, 0
+  ), [results]);
 
-  const masteredCount = useMemo(() => {
-    return results.reduce((sum, r) => {
-      return sum + [...r.borrowScore, ...r.returnScore].filter(i => i.mastered).length;
-    }, 0);
-  }, [results]);
+  const masteredCount = useMemo(() => results.reduce(
+    (sum, r) => sum + [...r.borrowScore, ...r.returnScore].filter(i => i.mastered).length, 0
+  ), [results]);
 
-  const getScoreClass = (result: SimulationResult) => {
-    const p = result.totalScore / result.maxScore;
+  const getScoreClass = (r: SimulationResult) => {
+    const p = r.totalScore / r.maxScore;
     if (p >= 0.9) return styles.scoreExcellent;
     if (p >= 0.75) return styles.scoreGood;
     if (p >= 0.6) return styles.scorePass;
     return styles.scoreFail;
   };
-
-  const getScoreLabel = (result: SimulationResult) => {
-    const p = result.totalScore / result.maxScore;
+  const getScoreLabel = (r: SimulationResult) => {
+    const p = r.totalScore / r.maxScore;
     if (p >= 0.9) return '优秀';
     if (p >= 0.75) return '良好';
     if (p >= 0.6) return '及格';
@@ -51,7 +58,9 @@ const ResultsPage: React.FC = () => {
   };
 
   const toggleExpand = (id: string) => {
-    setExpandedId(expandedId === id ? null : id);
+    const next = effectiveExpanded === id ? null : id;
+    setInternalExpanded(next);
+    setExpandedResultId(next);
   };
 
   const handleGoToTasks = () => {
@@ -61,18 +70,9 @@ const ResultsPage: React.FC = () => {
 
   const handleRetryItem = (result: SimulationResult, item: ScoreItemType) => {
     const task = mockTasks.find(t => t.id === result.taskId);
-    if (!task) {
-      Taro.showToast({ title: '未找到对应任务', icon: 'none' });
-      return;
-    }
-
+    if (!task) { Taro.showToast({ title: '未找到对应任务', icon: 'none' }); return; }
     const isBorrow = result.borrowScore.some(s => s.field === item.field);
-    const config: RetryConfig = {
-      resultId: result.id,
-      step: isBorrow ? 'borrow' : 'return',
-      field: item.field
-    };
-
+    const config: RetryConfig = { resultId: result.id, step: isBorrow ? 'borrow' : 'return', field: item.field };
     startRetry(config, task);
     Taro.switchTab({ url: '/pages/simulator/index' });
   };
@@ -84,9 +84,7 @@ const ResultsPage: React.FC = () => {
           <Text className={styles.emptyIcon}>📊</Text>
           <Text className={styles.emptyTitle}>暂无练习记录</Text>
           <Text className={styles.emptyDesc}>完成一次模拟练习后，成绩将在这里展示</Text>
-          <Button className={styles.emptyBtn} onClick={handleGoToTasks}>
-            去开始练习
-          </Button>
+          <Button className={styles.emptyBtn} onClick={handleGoToTasks}>去开始练习</Button>
         </View>
       </View>
     );
@@ -134,7 +132,12 @@ const ResultsPage: React.FC = () => {
         {results.map((result) => (
           <View
             key={result.id}
-            className={classnames(styles.resultCard, expandedId === result.id && styles.resultCardActive)}
+            id={`result-${result.id}`}
+            className={classnames(
+              styles.resultCard,
+              effectiveExpanded === result.id && styles.resultCardActive,
+              effectiveExpanded === result.id && styles.resultCardFlash
+            )}
           >
             <View className={styles.resultHeader}>
               <View className={classnames(styles.scoreCircle, getScoreClass(result))}>
@@ -147,12 +150,15 @@ const ResultsPage: React.FC = () => {
                 <View className={styles.resultMeta}>
                   <View className={styles.metaTag}>飞机：{result.aircraft}</View>
                   <View className={styles.metaTag}>{getScoreLabel(result)}</View>
+                  {result.mode === 'exam' && <View className={classnames(styles.metaTag, styles.metaExam)}>考试</View>}
+                  {result.mode === 'practice' && <View className={classnames(styles.metaTag, styles.metaPractice)}>练习</View>}
+                  {result.examId && <View className={classnames(styles.metaTag, styles.metaExam)}>组卷</View>}
                   <View className={styles.metaTag}>{result.completedAt}</View>
                 </View>
               </View>
             </View>
 
-            {expandedId === result.id && (
+            {effectiveExpanded === result.id && (
               <View className={styles.resultBody}>
                 <View className={styles.scoreSummary}>
                   <View className={styles.scoreSummaryItem}>
@@ -170,36 +176,22 @@ const ResultsPage: React.FC = () => {
                     <Text className={styles.scoreSummaryLabel}>归还环节</Text>
                   </View>
                 </View>
-
                 <View className={styles.detailSection}>
-                  <ScoreSection
-                    title="借出环节评分"
-                    items={result.borrowScore}
-                    onRetry={(item) => handleRetryItem(result, item)}
-                  />
-                  <ScoreSection
-                    title="归还环节评分"
-                    items={result.returnScore}
-                    onRetry={(item) => handleRetryItem(result, item)}
-                  />
+                  <ScoreSection title="借出环节评分" items={result.borrowScore}
+                    onRetry={(item) => handleRetryItem(result, item)} />
+                  <ScoreSection title="归还环节评分" items={result.returnScore}
+                    onRetry={(item) => handleRetryItem(result, item)} />
                 </View>
-
                 <View className={styles.quickActions}>
-                  <Button
-                    className={classnames(styles.actionBtn, styles.actionBtnPrimary)}
-                    onClick={handleGoToTasks}
-                  >
+                  <Button className={classnames(styles.actionBtn, styles.actionBtnPrimary)} onClick={handleGoToTasks}>
                     新任务
                   </Button>
                 </View>
               </View>
             )}
 
-            <Button
-              className={styles.expandBtn}
-              onClick={() => toggleExpand(result.id)}
-            >
-              {expandedId === result.id ? '收起详情' : '查看详情'}
+            <Button className={styles.expandBtn} onClick={() => toggleExpand(result.id)}>
+              {effectiveExpanded === result.id ? '收起详情' : '查看详情'}
             </Button>
           </View>
         ))}

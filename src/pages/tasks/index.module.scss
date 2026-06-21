@@ -115,3 +115,218 @@
   font-size: $font-size-md;
   color: $color-text-tertiary;
 }
+
+.sectionTitle {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin: $spacing-lg $page-padding $spacing-sm;
+}
+
+.modeBar {
+  display: flex;
+  gap: $spacing-sm;
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-xs;
+}
+
+.modeItem {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: $spacing-md;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-lg;
+  background-color: $color-bg-card;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.modeActive {
+  border-color: $color-primary;
+  background-color: rgba(30, 95, 168, 0.05);
+  box-shadow: 0 4rpx 16rpx rgba(30, 95, 168, 0.2);
+}
+
+.modeIcon {
+  font-size: $font-size-xl;
+  margin-right: $spacing-md;
+}
+
+.modeTexts {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.modeLabel {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.modeDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+}
+
+.modeCheck {
+  color: $color-primary;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  margin-left: $spacing-sm;
+}
+
+.quickSection {
+  padding: $spacing-md $page-padding 0;
+}
+
+.quickHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.quickHeader .sectionTitle {
+  margin: 0;
+}
+
+.buildExamBtn {
+  display: flex;
+  align-items: center;
+  padding: $spacing-sm $spacing-md;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-button;
+  box-shadow: $shadow-card;
+}
+
+.buildExamIcon {
+  font-size: $font-size-md;
+  margin-right: $spacing-xs;
+}
+
+.buildExamText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.quickGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-sm;
+}
+
+.quickCard {
+  padding: $spacing-lg $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  text-align: center;
+  transition: all $transition-base;
+
+  &:active {
+    transform: translateY(-2rpx);
+  }
+}
+
+.quickIcon {
+  font-size: 48rpx;
+  display: block;
+  margin-bottom: $spacing-sm;
+}
+
+.quickTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+}
+
+.quickHint {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  margin-top: $spacing-xs;
+  display: block;
+}
+
+.examSection {
+  padding: $spacing-md $page-padding;
+}
+
+.examHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.examHeader .sectionTitle {
+  margin: 0;
+}
+
+.examToggle {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.examList {
+  margin-top: $spacing-sm;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.examCard {
+  padding: $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  border-left: 6rpx solid $color-primary;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.examTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-xs;
+}
+
+.examTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.examCount {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+  background-color: rgba(30, 95, 168, 0.1);
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-sm;
+}
+
+.examMeta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.examMetaText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+

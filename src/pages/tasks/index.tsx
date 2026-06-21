@@ -6,13 +6,18 @@ import styles from './index.module.scss';
 import { useSimulator } from '@/store/SimulatorContext';
 import TaskCard from '@/components/TaskCard';
 import { mockTasks } from '@/data/mockTasks';
-import { Task, UserRole, ROLE_CONFIG } from '@/types';
+import { Task, UserRole, PracticeMode, ROLE_CONFIG, ERROR_CATEGORY_CONFIG } from '@/types';
 
 type DifficultyFilter = 'all' | 'easy' | 'medium' | 'hard';
 
 const TasksPage: React.FC = () => {
-  const { setCurrentTask, setCurrentStep, currentRole, setCurrentRole, resetSimulation } = useSimulator();
+  const {
+    setCurrentTask, setCurrentStep, currentRole, setCurrentRole, resetSimulation,
+    practiceMode, setPracticeMode, startCategoryPractice,
+    customExams, startCustomExam
+  } = useSimulator();
   const [filter, setFilter] = useState<DifficultyFilter>('all');
+  const [showExams, setShowExams] = useState(false);
 
   const roleFilteredTasks = useMemo(() => {
     return mockTasks.filter(task => task.roles.includes(currentRole));
@@ -30,6 +35,24 @@ const TasksPage: React.FC = () => {
     Taro.switchTab({ url: '/pages/simulator/index' });
   };
 
+  const handleQuickCategory = (catKey: keyof typeof ERROR_CATEGORY_CONFIG) => {
+    startCategoryPractice(catKey, currentRole);
+    Taro.switchTab({ url: '/pages/simulator/index' });
+  };
+
+  const handleStartExam = (examId: string) => {
+    const ok = startCustomExam(examId);
+    if (!ok) {
+      Taro.showToast({ title: '试卷不存在', icon: 'none' });
+      return;
+    }
+    Taro.switchTab({ url: '/pages/simulator/index' });
+  };
+
+  const handleGoBuildExam = () => {
+    Taro.navigateTo({ url: '/pages/exam/index' });
+  };
+
   const difficultyFilters: { key: DifficultyFilter; label: string }[] = [
     { key: 'all', label: '全部' },
     { key: 'easy', label: '简单' },
@@ -41,6 +64,11 @@ const TasksPage: React.FC = () => {
     { key: 'material_clerk', label: ROLE_CONFIG.material_clerk.label, desc: ROLE_CONFIG.material_clerk.description },
     { key: 'apprentice', label: ROLE_CONFIG.apprentice.label, desc: ROLE_CONFIG.apprentice.description },
     { key: 'intern', label: ROLE_CONFIG.intern.label, desc: ROLE_CONFIG.intern.description }
+  ];
+
+  const modes: { key: PracticeMode; label: string; desc: string; icon: string }[] = [
+    { key: 'practice', label: '练习模式', desc: '即时提醒，反复练习', icon: '✏️' },
+    { key: 'exam', label: '考试模式', desc: '模拟考试，严格记录', icon: '📝' }
   ];
 
   return (
@@ -63,6 +91,71 @@ const TasksPage: React.FC = () => {
         ))}
       </View>
 
+      <View className={styles.sectionTitle}>训练模式</View>
+      <View className={styles.modeBar}>
+        {modes.map(m => (
+          <View
+            key={m.key}
+            className={classnames(styles.modeItem, practiceMode === m.key && styles.modeActive)}
+            onClick={() => setPracticeMode(m.key)}
+          >
+            <Text className={styles.modeIcon}>{m.icon}</Text>
+            <View className={styles.modeTexts}>
+              <Text className={styles.modeLabel}>{m.label}</Text>
+              <Text className={styles.modeDesc}>{m.desc}</Text>
+            </View>
+            {practiceMode === m.key && <Text className={styles.modeCheck}>✓</Text>}
+          </View>
+        ))}
+      </View>
+
+      <View className={styles.quickSection}>
+        <View className={styles.quickHeader}>
+          <Text className={styles.sectionTitle}>快捷入口</Text>
+          <View className={styles.buildExamBtn} onClick={handleGoBuildExam}>
+            <Text className={styles.buildExamIcon}>📚</Text>
+            <Text className={styles.buildExamText}>教员组卷</Text>
+          </View>
+        </View>
+        <View className={styles.quickGrid}>
+          {(['serialNumber', 'airworthinessTag', 'workCardNumber', 'repairTag'] as const).map(k => (
+            <View key={k} className={styles.quickCard} onClick={() => handleQuickCategory(k)}>
+              <Text className={styles.quickIcon}>{ERROR_CATEGORY_CONFIG[k].icon}</Text>
+              <Text className={styles.quickTitle}>{ERROR_CATEGORY_CONFIG[k].label}</Text>
+              <Text className={styles.quickHint}>练同类错题</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {customExams.length > 0 && (
+        <View className={styles.examSection}>
+          <View className={styles.examHeader}>
+            <Text className={styles.sectionTitle}>已有试卷（{customExams.length}）</Text>
+            <Text className={styles.examToggle} onClick={() => setShowExams(v => !v)}>
+              {showExams ? '收起' : '展开'}
+            </Text>
+          </View>
+          {showExams && (
+            <View className={styles.examList}>
+              {customExams.map(exam => (
+                <View key={exam.id} className={styles.examCard} onClick={() => handleStartExam(exam.id)}>
+                  <View className={styles.examTop}>
+                    <Text className={styles.examTitle}>{exam.title}</Text>
+                    <Text className={styles.examCount}>{exam.taskIds.length} 题</Text>
+                  </View>
+                  <View className={styles.examMeta}>
+                    <Text className={styles.examMetaText}>身份：{ROLE_CONFIG[exam.role].label}</Text>
+                    <Text className={styles.examMetaText}>{exam.createdAt}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      <View className={styles.sectionTitle}>任务列表</View>
       <ScrollView className={styles.filterBar} scrollX>
         {difficultyFilters.map(f => (
           <View

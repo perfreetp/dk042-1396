@@ -2,7 +2,9 @@ export default defineAppConfig({
   pages: [
     'pages/tasks/index',
     'pages/simulator/index',
-    'pages/results/index'
+    'pages/results/index',
+    'pages/wrongbook/index',
+    'pages/exam/index'
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -24,6 +26,10 @@ export default defineAppConfig({
       {
         pagePath: 'pages/simulator/index',
         text: '模拟操作'
+      },
+      {
+        pagePath: 'pages/wrongbook/index',
+        text: '错题本'
       },
       {
         pagePath: 'pages/results/index',
