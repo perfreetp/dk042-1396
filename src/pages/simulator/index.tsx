@@ -94,16 +94,14 @@ const SimulatorPage: React.FC = () => {
           setActiveExamIndex(nextIdx);
           setCurrentTask(nextTask);
           setCurrentStep('borrow');
-          // 由于 resetSimulation 清了 activeExamId，需要重新设置
-          // startCustomExam 已经做好了，这里手动再设置一下
         }, 900);
       } else {
         // 最后一题，交卷
-        const finalResult = finishCustomExam();
+        const finalResult = finishCustomExam(currentResult);
         if (finalResult) {
           Taro.showModal({
             title: '试卷完成',
-            content: `总评：${finalResult.comment}\n总分：${finalResult.totalScore}/${finalResult.maxScore}`,
+            content: `总评：${finalResult.comment}\n总分：${finalResult.totalScore}/${finalResult.maxScore}（${Math.round(finalResult.totalScore / finalResult.maxScore * 100)} 分）`,
             showCancel: false,
             confirmColor: '#1E5FA8',
             success: () => Taro.switchTab({ url: '/pages/results/index' })

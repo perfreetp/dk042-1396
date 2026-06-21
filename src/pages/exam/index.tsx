@@ -5,13 +5,18 @@ import classnames from 'classnames';
 import styles from './index.module.scss';
 import { useSimulator } from '@/store/SimulatorContext';
 import { mockTasks } from '@/data/mockTasks';
-import { Task, UserRole, ROLE_CONFIG, ERROR_CATEGORY_CONFIG } from '@/types';
+import { Task, UserRole, ROLE_CONFIG, ErrorCategoryKey, ERROR_CATEGORY_CONFIG } from '@/types';
+
+type FocusFilter = 'all' | ErrorCategoryKey;
 
 const ExamBuilderPage: React.FC = () => {
-  const { currentRole, setCurrentRole, createCustomExam, customExams } = useSimulator();
+  const {
+    currentRole, setCurrentRole,
+    createCustomExam, startCustomExam,
+  } = useSimulator();
   const [title, setTitle] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [filterFocus, setFilterFocus] = useState<string>('all');
+  const [filterFocus, setFilterFocus] = useState<FocusFilter>('all');
 
   const roleTasks = useMemo(
     () => mockTasks.filter(t => t.roles.includes(currentRole)),
@@ -20,19 +25,39 @@ const ExamBuilderPage: React.FC = () => {
 
   const displayTasks = useMemo(() => {
     if (filterFocus === 'all') return roleTasks;
+    // 按错误类别筛选：看任务是否包含该类别对应的字段
+    const cfg = ERROR_CATEGORY_CONFIG[filterFocus];
+    if (!cfg) return roleTasks;
     return roleTasks.filter(t => {
-      const focusArr = t.roleFocus[currentRole] || [];
-      return focusArr.includes(filterFocus as any);
+      // 借出环节
+      if (cfg.fields.includes('airworthinessTag') && !t.requireAirworthinessTag) return false;
+      if (cfg.fields.includes('disassemblyRecord') && !t.requireDisassemblyRecord) return false;
+      if (cfg.fields.includes('workCardNumber') && !t.requireWorkCardNumber) return false;
+      // 件号/序号是所有任务都有
+      // 归还环节三类（status/repair/accessory）所有任务都有
+      return true;
     });
-  }, [filterFocus, roleTasks, currentRole]);
+  }, [filterFocus, roleTasks]);
 
-  const focusFilters = useMemo(() => {
-    const items: { key: string; label: string }[] = [{ key: 'all', label: '全部' }];
-    (Object.keys(ERROR_CATEGORY_CONFIG) as (keyof typeof ERROR_CATEGORY_CONFIG)[]).forEach(k => {
-      items.push({ key: k, label: `${ERROR_CATEGORY_CONFIG[k].icon} ${ERROR_CATEGORY_CONFIG[k].label}` });
-    });
-    return items;
-  }, []);
+  const focusFilters: { key: FocusFilter; label: string }[] = [
+    { key: 'all', label: '全部题' },
+    ...(Object.keys(ERROR_CATEGORY_CONFIG) as ErrorCategoryKey[]).map(k => ({
+      key: k,
+      label: ERROR_CATEGORY_CONFIG[k].label,
+    })),
+  ];
+
+  const taskFocusTags = (t: Task): string[] => {
+    const tags: string[] = [];
+    if (t.requireAirworthinessTag) tags.push('标签');
+    if (t.requireDisassemblyRecord) tags.push('拆装记录');
+    if (t.requireWorkCardNumber) tags.push('工卡');
+    tags.push('件号序号');
+    tags.push('状态判断');
+    tags.push('待修牌');
+    tags.push('附件齐套');
+    return tags.slice(0, 4);
+  };
 
   const toggleTask = (id: string) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -61,24 +86,25 @@ const ExamBuilderPage: React.FC = () => {
     const exam = createCustomExam({
       title: title.trim(),
       role: currentRole,
-      taskIds: selectedIds
+      taskIds: selectedIds,
     });
     Taro.showModal({
       title: '组卷完成',
-      content: `已创建试卷"${exam.title}"（${exam.taskIds.length} 题）\n是否立即开始？`,
+      content: `已创建「${exam.title}」（${exam.taskIds.length} 题）\n是否立即开始？`,
       confirmText: '立即开始',
       cancelText: '稍后再做',
       confirmColor: '#1E5FA8',
       success: (res) => {
         if (res.confirm) {
-          // Back to tasks and start
-          Taro.navigateBack({ delta: 1 });
-          Taro.showToast({ title: '组卷成功', icon: 'success' });
+          const ok = startCustomExam(exam.id);
+          if (ok) {
+            Taro.switchTab({ url: '/pages/simulator/index' });
+          } else {
+            Taro.showToast({ title: '启动失败', icon: 'none' });
+          }
         } else {
-          setTitle('');
-          setSelectedIds([]);
           Taro.showToast({ title: '已保存试卷', icon: 'success' });
-          Taro.navigateBack({ delta: 1 });
+          setTimeout(() => Taro.navigateBack({ delta: 1 }), 800);
         }
       }
     });
@@ -150,10 +176,10 @@ const ExamBuilderPage: React.FC = () => {
           <View className={styles.checkAllRow}>
             <View
               className={classnames(styles.checkAll,
-                displayTasks.every(t => selectedIds.includes(t.id)) && styles.checkAllOn)}
+                displayTasks.length > 0 && displayTasks.every(t => selectedIds.includes(t.id)) && styles.checkAllOn)}
               onClick={toggleAllDisplayed}
             >
-              <Text>{displayTasks.every(t => selectedIds.includes(t.id)) ? '☑' : '☐'}</Text>
+              <Text>{displayTasks.length > 0 && displayTasks.every(t => selectedIds.includes(t.id)) ? '☑' : '☐'}</Text>
               <Text className={styles.checkAllText}>全选当前视图</Text>
             </View>
             {selectedIds.length > 0 && (
@@ -165,7 +191,7 @@ const ExamBuilderPage: React.FC = () => {
             {displayTasks.length > 0 ? (
               displayTasks.map((t, idx) => {
                 const on = selectedIds.includes(t.id);
-                const focuses = t.roleFocus[currentRole] || [];
+                const focusTags = taskFocusTags(t);
                 return (
                   <View
                     key={t.id}
@@ -188,12 +214,9 @@ const ExamBuilderPage: React.FC = () => {
                           {getDifficultyLabel(t.difficulty)}
                         </View>
                         <View className={styles.focusTagRow}>
-                          {focuses.slice(0, 3).map(f => (
-                            <Text key={f} className={styles.focusTag}>
-                              {ERROR_CATEGORY_CONFIG[f as keyof typeof ERROR_CATEGORY_CONFIG]?.label || f}
-                            </Text>
+                          {focusTags.map(f => (
+                            <Text key={f} className={styles.focusTag}>{f}</Text>
                           ))}
-                          {focuses.length > 3 && <Text className={styles.focusTagMore}>+{focuses.length - 3}</Text>}
                         </View>
                       </View>
                     </View>
@@ -216,15 +239,14 @@ const ExamBuilderPage: React.FC = () => {
           <Text className={styles.bottomInfoText}>已选 {selectedIds.length} 题</Text>
           {selectedIds.length > 0 && (
             <Text className={styles.bottomInfoSub}>
-              覆盖 {(new Set(roleTasks.filter(t => selectedIds.includes(t.id))
-                .flatMap(t => t.roleFocus[currentRole] || []))).size} 个重点
+              身份：{ROLE_CONFIG[currentRole].label}
             </Text>
           )}
         </View>
         <Button
           className={classnames(styles.submitBtn, selectedIds.length < 1 && styles.submitBtnDisabled)}
           onClick={handleCreate}
-        >生成试卷并开始</Button>
+        >生成试卷</Button>
       </View>
     </View>
   );

@@ -6,7 +6,7 @@ import styles from './index.module.scss';
 import { useSimulator } from '@/store/SimulatorContext';
 import TaskCard from '@/components/TaskCard';
 import { mockTasks } from '@/data/mockTasks';
-import { Task, UserRole, PracticeMode, ROLE_CONFIG, ERROR_CATEGORY_CONFIG } from '@/types';
+import { Task, UserRole, PracticeMode, ROLE_CONFIG } from '@/types';
 
 type DifficultyFilter = 'all' | 'easy' | 'medium' | 'hard';
 
@@ -34,6 +34,13 @@ const TasksPage: React.FC = () => {
     setCurrentStep('borrow');
     Taro.switchTab({ url: '/pages/simulator/index' });
   };
+
+  const quickCats: Array<{ key: keyof typeof ERROR_CATEGORY_CONFIG; label: string; icon: string; hint: string }> = [
+    { key: 'serial', label: '序号类', icon: '🔢', hint: '序号核实专项' },
+    { key: 'tag', label: '标签类', icon: '🏷️', hint: '适航标签专项' },
+    { key: 'workcard', label: '工卡类', icon: '📝', hint: '工卡填写专项' },
+    { key: 'repair', label: '待修牌类', icon: '⚠️', hint: '待修牌专项' },
+  ];
 
   const handleQuickCategory = (catKey: keyof typeof ERROR_CATEGORY_CONFIG) => {
     startCategoryPractice(catKey, currentRole);
@@ -118,11 +125,11 @@ const TasksPage: React.FC = () => {
           </View>
         </View>
         <View className={styles.quickGrid}>
-          {(['serialNumber', 'airworthinessTag', 'workCardNumber', 'repairTag'] as const).map(k => (
-            <View key={k} className={styles.quickCard} onClick={() => handleQuickCategory(k)}>
-              <Text className={styles.quickIcon}>{ERROR_CATEGORY_CONFIG[k].icon}</Text>
-              <Text className={styles.quickTitle}>{ERROR_CATEGORY_CONFIG[k].label}</Text>
-              <Text className={styles.quickHint}>练同类错题</Text>
+          {quickCats.map(c => (
+            <View key={c.key} className={styles.quickCard} onClick={() => handleQuickCategory(c.key)}>
+              <Text className={styles.quickIcon}>{c.icon}</Text>
+              <Text className={styles.quickTitle}>{c.label}</Text>
+              <Text className={styles.quickHint}>{c.hint}</Text>
             </View>
           ))}
         </View>

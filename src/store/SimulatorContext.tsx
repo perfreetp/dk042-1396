@@ -102,7 +102,7 @@ interface SimulatorContextType {
   deleteCustomExam: (id: string) => void;
   startCustomExam: (examId: string) => boolean;
   saveCurrentExamResult: (taskResult: SimulationResult) => boolean;
-  finishCustomExam: () => ExamResult | null;
+  finishCustomExam: (lastResult?: SimulationResult) => ExamResult | null;
   cancelCustomExam: () => void;
   startCategoryPractice: (catKey: ErrorCategoryKey, role?: UserRole) => Task | null;
 }
@@ -130,10 +130,10 @@ export const SimulatorProvider: React.FC<P> = ({ children }) => {
   const [practiceMode, setPracticeModeState] = useState<PracticeMode>(() => loadMode());
   const [customExams, setCustomExams] = useState<CustomExam[]>(() => loadExams());
   const [examResults, setExamResults] = useState<ExamResult[]>(() => loadExamResults());
-  const [activeExamId, setActiveExamId] = useState<string | null>(null);
-  const [activeExamIndex, setActiveExamIndex] = useState<number>(0);
+  const [activeExamId, setActiveExamIdState] = useState<string | null>(null);
+  const [activeExamIndex, setActiveExamIndexState] = useState<number>(0);
   const [activeExamResults, setActiveExamResults] = useState<SimulationResult[]>([]);
-  const [expandedResultId, setExpandedResultId] = useState<string | null>(() => {
+  const [expandedResultId, setExpandedResultIdState] = useState<string | null>(() => {
     try { return (Taro.getStorageSync(EXPAND_KEY) as string) || null; } catch { return null; }
   });
 
@@ -152,7 +152,7 @@ export const SimulatorProvider: React.FC<P> = ({ children }) => {
     try { Taro.setStorageSync(MODE_KEY, m); } catch (e) { /* noop */ }
   }, []);
   const setExpandedResultId = useCallback((id: string | null) => {
-    setExpandedResultId(id);
+    setExpandedResultIdState(id);
     try { if (id) Taro.setStorageSync(EXPAND_KEY, id); else Taro.removeStorageSync(EXPAND_KEY); } catch { /* noop */ }
   }, []);
 
@@ -283,6 +283,8 @@ export const SimulatorProvider: React.FC<P> = ({ children }) => {
     setReturnFeedbacks([]);
     setCurrentResult(null);
     setRetryConfig(null);
+    // 注意：不清空 activeExamId / activeExamIndex / activeExamResults
+    // 组卷下一题推进时 resetSimulation 仍需保留组卷状态
     console.log('[SimulationReset]');
   }, []);
 
@@ -330,7 +332,7 @@ export const SimulatorProvider: React.FC<P> = ({ children }) => {
 
   // ===== Custom Exams =====
   const setActiveExamIndex = useCallback((idx: number) => {
-    setActiveExamIndex(idx);
+    setActiveExamIndexState(idx);
   }, []);
 
   const createCustomExam = useCallback((args: { title: string; role: UserRole; taskIds: string[] }): CustomExam => {
@@ -367,8 +369,8 @@ export const SimulatorProvider: React.FC<P> = ({ children }) => {
     setPracticeModeState('exam');
     try { Taro.setStorageSync(MODE_KEY, 'exam'); } catch { /* noop */ }
     resetSimulation();
-    setActiveExamId(examId);
-    setActiveExamIndex(0);
+    setActiveExamIdState(examId);
+    setActiveExamIndexState(0);
     setActiveExamResults([]);
     setCurrentTask(firstTask);
     setCurrentStep('borrow');
@@ -384,12 +386,16 @@ export const SimulatorProvider: React.FC<P> = ({ children }) => {
     return true;
   }, [activeExamId]);
 
-  const finishCustomExam = useCallback((): ExamResult | null => {
+  const finishCustomExam = useCallback((lastResult?: SimulationResult): ExamResult | null => {
     if (!activeExamId) return null;
     const exam = customExams.find(e => e.id === activeExamId);
     if (!exam) return null;
-    const totalScore = activeExamResults.reduce((s, r) => s + r.totalScore, 0);
-    const maxScore = activeExamResults.reduce((s, r) => s + r.maxScore, 0);
+    // 合并当前已保存的 + 可能传入的最后一题
+    const allResults = lastResult
+      ? [...activeExamResults, lastResult]
+      : activeExamResults;
+    const totalScore = allResults.reduce((s, r) => s + r.totalScore, 0);
+    const maxScore = allResults.reduce((s, r) => s + r.maxScore, 0);
     const rate = maxScore > 0 ? totalScore / maxScore : 0;
     let comment = '';
     if (rate >= 0.9) comment = '整套试卷表现优秀，操作规范到位，建议继续保持！';
@@ -399,21 +405,21 @@ export const SimulatorProvider: React.FC<P> = ({ children }) => {
     const er: ExamResult = {
       examId: activeExamId,
       examTitle: exam.title,
-      taskResults: activeExamResults,
+      taskResults: allResults,
       totalScore, maxScore,
       completedAt: new Date().toLocaleString('zh-CN'),
       comment,
     };
     setExamResults(prev => { const next = [er, ...prev]; saveExamResults(next); return next; });
-    setActiveExamId(null);
+    setActiveExamIdState(null);
     setActiveExamIndex(0);
     setActiveExamResults([]);
-    console.log('[FinishExam]', { examId: activeExamId, totalScore, maxScore, comment });
+    console.log('[FinishExam]', { examId: activeExamId, totalScore, maxScore, comment, taskCount: allResults.length });
     return er;
   }, [activeExamId, customExams, activeExamResults]);
 
   const cancelCustomExam = useCallback(() => {
-    setActiveExamId(null);
+    setActiveExamIdState(null);
     setActiveExamIndex(0);
     setActiveExamResults([]);
   }, []);
@@ -438,12 +444,18 @@ export const SimulatorProvider: React.FC<P> = ({ children }) => {
       setCurrentRoleState(role);
       try { Taro.setStorageSync(ROLE_KEY, role); } catch { /* noop */ }
     }
+    // 退出任何进行中的组卷
+    if (activeExamId) {
+      setActiveExamIdState(null);
+      setActiveExamIndex(0);
+      setActiveExamResults([]);
+    }
     resetSimulation();
     setCurrentTask(pick);
     setCurrentStep(cfg.borrow ? 'borrow' : 'return');
     console.log('[StartCategoryPractice]', { cat: catKey, taskId: pick.id, role: effectiveRole });
     return pick;
-  }, [currentRole, resetSimulation]);
+  }, [currentRole, resetSimulation, activeExamId]);
 
   return (
     <SimulatorContext.Provider
